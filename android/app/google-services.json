@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "44712156267",
+    "firebase_url": "https://no-probllama.firebaseio.com",
+    "project_id": "no-probllama",
+    "storage_bucket": "no-probllama.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44712156267:android:676b454f7127366ec9e52e",
+        "android_client_info": {
+          "package_name": "noprobllama.no_probllama_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44712156267-n12d8reu5p4uqvh0r4fm6ovhcd4g28qu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "noprobllama.no_probllama_app",
+            "certificate_hash": "666784a95c68d071d66aa20f58dbb75cc7700e8e"
+          }
+        },
+        {
+          "client_id": "44712156267-ms9hjbumkm4hqja81nhhqg0usr5njb7e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIapPiWnpmGlWL-IEUe2pB2AXhSQ2eV9g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44712156267-ms9hjbumkm4hqja81nhhqg0usr5njb7e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
