@@ -18,20 +18,17 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
+              primarySwatch: Colors.blue,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
               textTheme: TextTheme(
                 headline1: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 32,
-                  color: Colors.black
-                ),
-              )
-          ),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                    color: Colors.black),
+              )),
           home: LoginPage(),
         ),
-        create: (context) => CurrentUserInfo()
-    );
+        create: (context) => CurrentUserInfo());
   }
 }
 
@@ -49,10 +46,14 @@ class _MainPageState extends State<MainPage> {
 
   Widget getPage(BuildContext context, int selection) {
     switch (currentIndex) {
-      case HOME: return HomePage();
-      case USEREVENTS: return UserEventsPage();
-      case PROFILE: return Column();
-      default: return Column();
+      case HOME:
+        return HomePage();
+      case USEREVENTS:
+        return UserEventsPage();
+      case PROFILE:
+        return Column();
+      default:
+        return Column();
     }
   }
 
@@ -63,18 +64,19 @@ class _MainPageState extends State<MainPage> {
             type: BottomNavigationBarType.fixed,
             selectedItemColor: Colors.blue,
             items: [
-              BottomNavigationBarItem(icon: Icon(Icons.home), title: Text('Home')),
-              BottomNavigationBarItem(icon: Icon(Icons.calendar_today), title: Text('My Events')),
-              BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Profile'))
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.home), title: Text('Home')),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.calendar_today), title: Text('My Events')),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person), title: Text('Profile'))
             ],
             currentIndex: currentIndex,
             onTap: (int index) {
               setState(() {
                 currentIndex = index;
               });
-            }
-        ),
-        body: SafeArea(child: getPage(context, currentIndex))
-    );
+            }),
+        body: SafeArea(child: getPage(context, currentIndex)));
   }
 }
