@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'Home.dart';
+import 'main.dart';
 
 class CurrentUserInfo with ChangeNotifier{
   String id;
@@ -36,7 +36,7 @@ class CurrentUserInfo with ChangeNotifier{
     User user = await _handleSignIn();
     setID(user.uid);
     if (user != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
     }
     else {
       FirebaseFirestore.instance.collection('users').doc(user.uid).set({'email': user.email});
