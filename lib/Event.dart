@@ -30,34 +30,8 @@ class EventCard extends StatelessWidget {
   final int currentAttendees;
   final int maxAttendees;
 
-  Future<bool> retrieveSignedUp(String userID, String eventID) {
-    return FirebaseFirestore.instance.collection('users').doc(userID).get().then((doc) => List<String>.from(doc.get('events')).contains(eventID));
-  }
-
   Future<DocumentSnapshot> retrieveUserDoc(String userID) {
     return FirebaseFirestore.instance.collection('users').doc(userID).get();
-  }
-
-  void addSignUp(String userID, String eventID) {
-    DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(userID);
-    userDoc.get().then((snapshot) {
-      userDoc.update({'events': List<String>.from(snapshot.get('events'))..add(eventID)});
-    });
-    DocumentReference eventDoc = FirebaseFirestore.instance.collection('events').doc(eventID);
-    eventDoc.get().then((snapshot) {
-      eventDoc.update({'currentAttendees': snapshot.get('currentAttendees') + 1});
-    });
-  }
-
-  void removeSignUp(String userID, String eventID) {
-    DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(userID);
-    userDoc.get().then((snapshot) {
-      userDoc.update({'events': List<String>.from(snapshot.get('events'))..remove(eventID)});
-    });
-    DocumentReference eventDoc = FirebaseFirestore.instance.collection('events').doc(eventID);
-    eventDoc.get().then((snapshot) {
-      eventDoc.update({'currentAttendees': snapshot.get('currentAttendees') - 1});
-    });
   }
 
   @override
@@ -79,7 +53,6 @@ class EventCard extends StatelessWidget {
         color: Colors.grey
     );
 
-    Color blue = Color.fromRGBO(0x2d, 0x82, 0xB7, 1.0);
     String userID = Provider.of<CurrentUserInfo>(context).id;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -129,39 +102,8 @@ class EventCard extends StatelessWidget {
                     padding: EdgeInsets.only(top: 8, bottom: 8),
                   ),
                   Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        FutureBuilder(
-                          future: retrieveSignedUp(userID, eventID),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return Container();
-                            }
-                            bool signedUp = snapshot.data;
-                            return signedUp ?
-                            FlatButton(
-                                color: blue,
-                                textColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: Text('SIGNED UP'),
-                                onPressed: () {
-                                  removeSignUp(userID, eventID);
-                                }
-                            ) :
-                            OutlineButton(
-                                borderSide: BorderSide(color: blue),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-                                child: Text('RSVP', style: TextStyle(color: blue)),
-                                onPressed: () {
-                                  addSignUp(userID, eventID);
-                                  //TODO: create email screen
-                                }
-                            );
-
-                          },
-                        ),
+                        RSVPButton(eventID),
                         SizedBox(width: 16),
                         OutlineButton(
                             borderSide: BorderSide(color: Colors.blue),
@@ -181,35 +123,100 @@ class EventCard extends StatelessWidget {
   }
 }
 
-class Tags extends StatelessWidget {
-  Tags(this.tags);
+class RSVPButton extends StatefulWidget {
+  RSVPButton(this.eventID);
+  final String eventID;
+  @override
+  _RSVPButtonState createState() => _RSVPButtonState();
+}
 
-  final List<String> tags;
+class _RSVPButtonState extends State<RSVPButton> {
+  bool disabled = false;
+
+  void addSignUp(String userID, String eventID) async {
+    DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentSnapshot userSnap = await transaction.get(userDoc);
+      transaction.update(userSnap.reference, {'events': userSnap.get('events')..add(eventID)});
+    });
+
+    DocumentReference eventDoc = FirebaseFirestore.instance.collection('events').doc(eventID);
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentSnapshot eventSnap = await transaction.get(eventDoc);
+      transaction.update(eventSnap.reference, {'currentAttendees': eventSnap.get('currentAttendees') + 1});
+    }).then((value) => enable());
+  }
+
+  void removeSignUp(String userID, String eventID) async {
+    DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentSnapshot userSnap = await transaction.get(userDoc);
+      transaction.update(userSnap.reference, {'events': userSnap.get('events')..remove(eventID)});
+    });
+
+    DocumentReference eventDoc = FirebaseFirestore.instance.collection('events').doc(eventID);
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentSnapshot eventSnap = await transaction.get(eventDoc);
+      transaction.update(eventSnap.reference, {'currentAttendees': eventSnap.get('currentAttendees') - 1});
+    }).then((value) => enable());
+  }
+
+  void disable() {
+    setState(() {
+      disabled = true;
+    });
+  }
+
+  void enable() {
+    setState(() {
+      disabled = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-        spacing: 8,
-        runSpacing: 4,
-        children: tags.map((name) {
-          return Container(
-              color: Colors.blue[100],
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Text(name),
-              )
+    String userID = Provider.of<CurrentUserInfo>(context).id;
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('users').doc(userID).snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          DocumentSnapshot userDoc = snapshot.data;
+          bool signedUp = List<String>.from(userDoc.get('events')).contains(widget.eventID);
+          return signedUp ?
+          FlatButton(
+              color: Theme.of(context).accentColor,
+              disabledColor: Colors.white,
+              textColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Text('SIGNED UP'),
+              onPressed: disabled ? null : () {
+                disable();
+                removeSignUp(userID, widget.eventID);
+              }
+          ) :
+          OutlineButton(
+              borderSide: BorderSide(color: Theme.of(context).accentColor),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+              child: Text('RSVP', style: TextStyle(color: Theme.of(context).accentColor)),
+              disabledBorderColor: Colors.white,
+              onPressed: disabled ? null : () {
+                //TODO: create email screen
+                disable();
+                addSignUp(userID, widget.eventID);
+              }
           );
-        }).toList()
+        }
     );
   }
 }
 
 class EventMethods {
-  static Future<List<String>> retrieveEventIDs(String userID) {
-    return FirebaseFirestore.instance
-        .collection('users')
-        .doc(userID)
-        .get()
-        .then((doc) => List<String>.from(doc.get('events')));
+  static Future<bool> retrieveSignedUp(String userID, String eventID) {
+    DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(userID);
+    return userDoc.get().then((doc) => List<String>.from(doc.get('events')).contains(eventID));
   }
 }
