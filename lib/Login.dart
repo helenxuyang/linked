@@ -53,21 +53,41 @@ class CurrentUserInfo with ChangeNotifier{
 class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    CurrentUserInfo userInfo = Provider.of<CurrentUserInfo>(context);
     return SafeArea(
         child: Scaffold(
             body: Column(
                 children: [
-                  RaisedButton(
-                    child: Text('Sign in with Google'),
-                    onPressed: () {
-                      userInfo.signIn(context);
-                    },
-                  ),
-                  SignOutButton()
+                  SignInButton(),
+                  //SignOutButton()
                 ]
             )
         )
+    );
+  }
+}
+
+class SignInButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    CurrentUserInfo userInfo = Provider.of<CurrentUserInfo>(context);
+    return Center(
+      child: OutlineButton(
+        highlightColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/google_logo.png', width: 20),
+              SizedBox(width: 20),
+              Text('Sign in with Google', style: TextStyle(fontSize: 16))
+            ]
+          ),
+        ),
+        onPressed: () {
+          userInfo.signIn(context);
+        },
+      ),
     );
   }
 }
