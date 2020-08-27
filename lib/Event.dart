@@ -212,8 +212,4 @@ class EventMethods {
         .get()
         .then((doc) => List<String>.from(doc.get('events')));
   }
-
-  static Future<DocumentSnapshot> retrieveEventDoc(String eventID) async {
-    return FirebaseFirestore.instance.collection('events').doc(eventID).get();
-  }
 }

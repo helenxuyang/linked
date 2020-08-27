@@ -25,8 +25,8 @@ class UserEventsPage extends StatelessWidget {
                 ]
             ),
           ),
-          FutureBuilder(
-            future: EventMethods.retrieveEventIDs(userID),
+          StreamBuilder(
+            stream: FirebaseFirestore.instance.collection('users').doc(userID).snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 print(snapshot.error);
@@ -35,16 +35,17 @@ class UserEventsPage extends StatelessWidget {
               if (!snapshot.hasData) {
                 return CircularProgressIndicator();
               }
-              List<String> eventIDs = snapshot.data;
+              DocumentSnapshot userDoc = snapshot.data;
+              List<String> eventIDs = List<String>.from(userDoc.get('events'));
               if (eventIDs.isEmpty) {
                 return Text('No events yet!');
               }
               return Expanded(
                 child: ListView.builder(
-                  itemCount: snapshot.data.length,
+                  itemCount: eventIDs.length,
                   itemBuilder: (context, index) {
-                    return FutureBuilder(
-                        future: EventMethods.retrieveEventDoc(eventIDs[index]),
+                    return StreamBuilder(
+                        stream: FirebaseFirestore.instance.collection('events').doc(eventIDs[index]).snapshots(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) {
                             return Container();
