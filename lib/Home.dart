@@ -26,46 +26,11 @@ class HomePage extends StatelessWidget {
           child: ListView(children: [EventGroup('water')]),
         ),
         FloatingActionButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      content: Stack(
-                        overflow: Overflow.visible,
-                        children: <Widget>[
-                          Positioned(
-                            right: -40.0,
-                            top: -40.0,
-                            child: InkResponse(
-                              onTap: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: CircleAvatar(
-                                child: Icon(Icons.close),
-                                backgroundColor: Colors.red,
-                              ),
-                            ),
-                          ),
-                          Form(
-                              key: GlobalKey(debugLabel: 'tempFormKey'),
-                              child: Column(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: TextFormField(),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text("Submit"),
-                                  )
-                                ],
-                              ))
-                        ],
-                      ),
-                    );
-                  });
-            },
+            onPressed: () => {
+                  showDialog(
+                      context: context,
+                      builder: (new _CreateEventState()).alertBuilder)
+                },
             child: Icon(Icons.add))
       ]),
     );
@@ -107,18 +72,46 @@ class EventGroup extends StatelessWidget {
 class _CreateEventState extends State<CreateEvent> {
   final _formKey = GlobalKey<FormState>();
 
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
+  AlertDialog alertBuilder(BuildContext context) {
+    return AlertDialog(
+      content: Stack(
+        overflow: Overflow.visible,
         children: <Widget>[
-          TextFormField(
-            initialValue: "Hi Mom",
-          )
+          Positioned(
+            right: -40.0,
+            top: -40.0,
+            child: InkResponse(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: CircleAvatar(
+                child: Icon(Icons.close),
+                backgroundColor: Colors.red,
+              ),
+            ),
+          ),
+          Form(
+              key: GlobalKey(debugLabel: 'tempFormKey'),
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: TextFormField(),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text("Submit"),
+                  )
+                ],
+              ))
         ],
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Container();
   }
 }
 
