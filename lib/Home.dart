@@ -1,9 +1,27 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import 'Login.dart';
 
 class HomePage extends StatelessWidget {
+
+  Future<List<String>> retrieveEventIDs(String userID) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .get()
+        .then((doc) => List<String>.from(doc.get('events')));
+  }
+
+  Future<DocumentSnapshot> retrieveEventDoc(String eventID) async {
+    return FirebaseFirestore.instance.collection('events').doc(eventID).get();
+  }
+
   @override
   Widget build(BuildContext context) {
+    String userID = Provider.of<CurrentUserInfo>(context).id;
     return Scaffold(
         body: SafeArea(
             child: Column(
@@ -23,20 +41,44 @@ class HomePage extends StatelessWidget {
                         ]
                     ),
                   ),
-                  Expanded(
-                    child: ListView(
-                        children: [
-                          EventCard('Codenames battle',
-                              ['virtual', 'games', 'codenames'],
-                              'guys I just wanna play codenames. New players welcomed, I\'ll explain the rules!',
-                              'Helen Yang',
-                              DateTime(2020, 8, 26, 22),
-                              'example.com',
-                              3,
-                              12
-                          )
-                        ]
-                    ),
+                  FutureBuilder(
+                    future: retrieveEventIDs(userID),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        print(snapshot.error);
+                        throw Exception('error when retrieving user\'s event IDs');
+                      }
+                      if (!snapshot.hasData) {
+                        return CircularProgressIndicator();
+                      }
+                      return Expanded(
+                        child: ListView.builder(
+                          itemCount: snapshot.data.length,
+                            itemBuilder: (context, index) {
+                              return FutureBuilder(
+                                future: retrieveEventDoc(snapshot.data[index]),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return Container();
+                                  }
+                                  DocumentSnapshot eventDoc = snapshot.data;
+                                  return EventCard(
+                                      eventDoc.get('title'),
+                                      List<String>.from(eventDoc.get('tags')),
+                                      eventDoc.get('description'),
+                                      eventDoc.get('organizerID'),
+                                      eventDoc.get('dateTime').toDate(),
+                                      eventDoc.get('appName'),
+                                      eventDoc.get('appURL'),
+                                      eventDoc.get('currentAttendees'),
+                                      eventDoc.get('maxAttendees')
+                                  );
+                                }
+                              );
+                            },
+                        ),
+                      );
+                    },
                   )
                 ]
             )
@@ -46,15 +88,20 @@ class HomePage extends StatelessWidget {
 }
 
 class EventCard extends StatelessWidget {
-  EventCard(this.title, this.tags, this.description, this.organizer, this.dateTime, this.zoomURL, this.currentAttendees, this.maxAttendees);
+  EventCard(this.title, this.tags, this.description, this.organizer, this.dateTime, this.app, this.url, this.currentAttendees, this.maxAttendees);
   final String title;
   final List<String> tags;
   final String description;
   final String organizer;
   final DateTime dateTime;
-  final String zoomURL;
+  final String app;
+  final String url;
   final int currentAttendees;
   final int maxAttendees;
+
+  Future<DocumentSnapshot> retrieveUserDoc(String userID) {
+    return FirebaseFirestore.instance.collection('users').doc(userID).get();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +117,9 @@ class EventCard extends StatelessWidget {
         fontWeight: FontWeight.bold
     );
     TextStyle secondaryStyle = TextStyle(
-      fontSize: 14,
-      fontStyle: FontStyle.italic,
-      color: Colors.grey
+        fontSize: 14,
+        fontStyle: FontStyle.italic,
+        color: Colors.grey
     );
 
     return Padding(
@@ -101,7 +148,20 @@ class EventCard extends StatelessWidget {
                       ]
                   ),
                   SizedBox(height: 8),
-                  Text('Organized by: $organizer', style: subtitleStyle),
+                  FutureBuilder(
+                    future: retrieveUserDoc(organizer),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        print(snapshot.error);
+                        throw(Exception('error when retrieving user doc'));
+                      }
+                      if (!snapshot.hasData) {
+                        return Text('Organized by...');
+                      }
+                      DocumentSnapshot userDoc = snapshot.data;
+                      return Text('Organized by: ' + userDoc.get('firstName') + ' ' + userDoc.get('lastName'), style: subtitleStyle);
+                    },
+                  ),
                   SizedBox(height: 8),
                   Text(description),
                   SizedBox(height: 8),

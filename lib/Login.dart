@@ -58,7 +58,7 @@ class LoginPage extends StatelessWidget {
             body: Column(
                 children: [
                   SignInButton(),
-                  //SignOutButton()
+                  SignOutButton()
                 ]
             )
         )
