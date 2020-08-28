@@ -88,7 +88,7 @@ class EventCard extends StatelessWidget {
                         throw(Exception('error when retrieving user doc'));
                       }
                       if (!snapshot.hasData) {
-                        return Text('Organized by...');
+                        return Text('Organized by...', style: subtitleStyle);
                       }
                       DocumentSnapshot userDoc = snapshot.data;
                       return Text('Organized by: ' + userDoc.get('firstName') + ' ' + userDoc.get('lastName'), style: subtitleStyle);
