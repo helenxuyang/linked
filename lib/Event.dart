@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
+import 'Profile.dart';
 
 class Event {
   Event(this.eventID, this.title, this.tags, this.description, this.organizer,
@@ -247,7 +248,7 @@ class PersonChip extends StatelessWidget {
       label: Text(doc.get('firstName') + ' ' + doc.get('lastName'),
           style: TextStyle(color: Theme.of(context).accentColor)),
       onPressed: () {
-        //TODO: navigate to profile
+        Navigator.push(context, MaterialPageRoute(builder: (context) => Scaffold(body: ProfilePage(FieldPath.documentId.toString()))));
       },
     );
   }

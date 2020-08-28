@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Home.dart';
 import 'Schedule.dart';
+import 'Profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,13 +48,14 @@ class _MainPageState extends State<MainPage> {
   int currentIndex = 0;
 
   Widget getPage(BuildContext context, int selection) {
+    String userID = Provider.of<CurrentUserInfo>(context).id;
     switch (currentIndex) {
       case HOME:
         return HomePage();
       case SCHEDULE:
         return SchedulePage();
       case PROFILE:
-        return Column();
+        return ProfilePage(userID);
       default:
         return Column();
     }
