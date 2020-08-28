@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Profile.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Event {
   static final List<String> appOptions = ['Virtual', 'In Person'];
@@ -45,6 +46,11 @@ class Event {
   final DateTime endTime;
   final List<String> attendeeIDs;
   final int maxAttendees;
+
+  bool isLive() {
+    DateTime now = DateTime.now();
+    return now.isAfter(startTime) && now.isBefore(endTime);
+  }
 }
 
 class EventCard extends StatelessWidget {
@@ -89,6 +95,7 @@ class EventCard extends StatelessWidget {
                   children: [
                     Icon(Icons.access_time, size: iconSize),
                     SizedBox(width: 4),
+                    event.isLive() ? Text('Now', style: logisticsStyle.apply(color: Color.fromRGBO(0xeb, 0x8a, 0x90, 1.0))) :
                     Text(
                         DateFormat('E').format(event.startTime) +
                             '. ' +
@@ -132,7 +139,7 @@ class EventCard extends StatelessWidget {
                     style: secondaryStyle),
                 SizedBox(height: 8),
                 Row(children: [
-                  RSVPButton(event.eventID),
+                  event.isVirtual && event.isLive() ? JoinButton(event.location) : RSVPButton(event.eventID),
                   SizedBox(width: 16),
                   ShareButton()
                 ])
@@ -201,72 +208,76 @@ class EventPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child:
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              width: 50,
-              child: FlatButton(
-                  splashColor: Colors.white,
-                  highlightColor: Colors.white,
-                  padding: EdgeInsets.only(left: 0, right: 4),
-                  child: Align(
-                      child: Text('Back',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.normal)),
-                      alignment: Alignment.centerLeft),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }
-              ),
-            ),
-            Text(event.title,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            Text(
-                DateFormat('EEEE').format(event.startTime) +
-                    ', ' +
-                    DateFormat('MMMMd').format(event.startTime) +
-                    ' at ' +
-                    DateFormat('jm').format(event.startTime),
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Color.fromRGBO(0xEB, 0x8a, 0x90, 1.0))),
-            Text(event.isVirtual ? 'Virtual Event' : event.location, style: TextStyle(fontSize: 16)),
-            SizedBox(height: 8),
-            Row(children: [
-              Expanded(child: RSVPButton(event.eventID)),
-              SizedBox(width: 16),
-              Expanded(child: ShareButton())
-            ]),
-            SizedBox(height: 8),
-            Text('Description', style: subtitleStyle),
-            SizedBox(height: 4),
-            Text(event.description),
-            SizedBox(height: 4),
-            Text(event.tags.map((tag) => '#' + tag).join('  '),
-                style: TextStyle(
-                    color: Color.fromRGBO(0x8F, 0x8F, 0x8F, 1.0),
-                    fontStyle: FontStyle.italic)),
-            SizedBox(height: 8),
-            Text('Organizer', style: subtitleStyle),
-            OrganizerChip(event.organizer),
-            SizedBox(height: 8),
-            Text(
-                'Attendees (${event.attendeeIDs.length.toString()}/${event.maxAttendees.toString()})',
-                style: subtitleStyle),
-            StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('events')
-                    .doc(event.eventID)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Container();
-                  }
-                  DocumentSnapshot eventDoc = snapshot.data;
-                  List<String> attendeeIDs =
-                  List<String>.from(eventDoc.get('attendees'));
-                  return AttendeeChips(attendeeIDs);
-                })
-          ]),
+          Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 50,
+                  child: FlatButton(
+                      splashColor: Colors.white,
+                      highlightColor: Colors.white,
+                      padding: EdgeInsets.only(left: 0, right: 4),
+                      child: Align(
+                          child: Text('Back',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.normal)),
+                          alignment: Alignment.centerLeft),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }
+                  ),
+                ),
+                Text(event.title,
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                Text(
+                    DateFormat('EEEE').format(event.startTime) +
+                        ', ' +
+                        DateFormat('MMMMd').format(event.startTime) +
+                        ' at ' +
+                        DateFormat('jm').format(event.startTime),
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromRGBO(0xEB, 0x8a, 0x90, 1.0))),
+                Text(event.isVirtual ? 'Virtual Event' : event.location, style: TextStyle(fontSize: 16)),
+                SizedBox(height: 8),
+                Row(
+                    children: [
+                      Expanded(child: RSVPButton(event.eventID)),
+                      SizedBox(width: 16),
+                      Expanded(child: ShareButton())
+                    ]
+                ),
+                SizedBox(height: 8),
+                Text('Description', style: subtitleStyle),
+                SizedBox(height: 4),
+                Text(event.description),
+                SizedBox(height: 4),
+                Text(event.tags.map((tag) => '#' + tag).join('  '),
+                    style: TextStyle(
+                        color: Color.fromRGBO(0x8F, 0x8F, 0x8F, 1.0),
+                        fontStyle: FontStyle.italic)),
+                SizedBox(height: 8),
+                Text('Organizer', style: subtitleStyle),
+                OrganizerChip(event.organizer),
+                SizedBox(height: 8),
+                Text(
+                    'Attendees (${event.attendeeIDs.length.toString()}/${event.maxAttendees.toString()})',
+                    style: subtitleStyle),
+                StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('events')
+                        .doc(event.eventID)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container();
+                      }
+                      DocumentSnapshot eventDoc = snapshot.data;
+                      List<String> attendeeIDs =
+                      List<String>.from(eventDoc.get('attendees'));
+                      return AttendeeChips(attendeeIDs);
+                    })
+              ]),
         ),
       ),
     );
@@ -321,7 +332,8 @@ class OrganizerChip extends StatelessWidget {
           }
           DocumentSnapshot organizerDoc = snapshot.data;
           return PersonChip(organizerDoc);
-        });
+        }
+    );
   }
 }
 
@@ -358,13 +370,45 @@ class ShareButton extends StatelessWidget {
         child: Text('SHARE', style: TextStyle(color: Colors.blue)),
         onPressed: () {
           //TODO: add share
-        });
+        }
+    );
+  }
+}
+
+class JoinButton extends StatelessWidget {
+  JoinButton(this.url);
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+        color: Theme.of(context).accentColor,
+        disabledColor: Colors.transparent,
+        textColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Text('JOIN'),
+        onPressed: () async {
+          if (await canLaunch(url)) {
+            await launch(
+              url,
+              forceSafariVC: false,
+              forceWebView: false,
+              headers: <String, String>{'my_header_key': 'my_header_value'},
+            );
+          } else {
+            throw 'Could not launch $url';
+          }
+        }
+    );
   }
 }
 
 class RSVPButton extends StatefulWidget {
   RSVPButton(this.eventID);
   final String eventID;
+
   @override
   _RSVPButtonState createState() => _RSVPButtonState();
 }

@@ -57,7 +57,7 @@ class ProfilePage extends StatelessWidget {
                     Text(doc.get('status'),
                         style: TextStyle(
                             fontSize: 18,
-                            color: Color.fromRGBO(0xeb, 0x8a, 0x90, 1.0))),
+                            color: Theme.of(context).accentColor)),
                     SizedBox(height: 16),
                     Text('Bio', style: subtitleStyle),
                     Text(doc.get('bio'), style: TextStyle(fontSize: 16)),
