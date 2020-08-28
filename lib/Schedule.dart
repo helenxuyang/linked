@@ -76,6 +76,9 @@ class _SchedulePageState extends State<SchedulePage> {
                     return CircularProgressIndicator();
                   }
                   List<DocumentSnapshot> eventDocs = snapshot.data.docs;
+                  if (eventDocs.isEmpty) {
+                    return Text('No events yet!');
+                  }
                   Map<DateTime, List<DocumentSnapshot>> daysAndEvents = {};
                   for (DocumentSnapshot d in eventDocs) {
                     DateTime dateTime = d.get('dateTime').toDate();

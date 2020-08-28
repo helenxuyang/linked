@@ -75,9 +75,12 @@ class ProfilePage extends StatelessWidget {
                                 .where('dateTime', isGreaterThan: Timestamp.now()).snapshots(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return CircularProgressIndicator();
+                                return Container();
                               }
                               List<DocumentSnapshot> docs = snapshot.data.docs;
+                              if (docs.isEmpty) {
+                                return Text('No events yet!');
+                              }
                               return SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Row(

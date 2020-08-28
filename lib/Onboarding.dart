@@ -26,6 +26,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   TextEditingController firstNameCtrl = TextEditingController();
   TextEditingController lastNameCtrl = TextEditingController();
   TextEditingController majorCtrl = TextEditingController();
+  TextEditingController bioCtrl = TextEditingController();
   TextEditingController classCtrl = TextEditingController();
 
   @override
@@ -115,6 +116,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
             onChanged: (selection) {
               setState(() {
                 f20Status = selection;
+              });
+            },
+          ),
+          bigSpacer,
+          Text('A short bio'),
+          smallSpacer,
+          TextField(
+            controller: bioCtrl,
+            onSubmitted: (value) {
+              setState(() {
+                bioCtrl.text = value;
               });
             },
           ),
@@ -313,6 +325,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
               {
                 'firstName': firstNameCtrl.text,
                 'lastName': lastNameCtrl.text,
+                'bio': bioCtrl.text,
+                'status': f20Status,
                 'photoURL': user.photoURL,
                 'major': majorCtrl.text,
                 'classYear': gradYear,
