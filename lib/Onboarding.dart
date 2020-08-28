@@ -21,6 +21,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
     'Living outside of Ithaca'
   ];
   String f20Status;
+  String instagramUser;
+  String facebookUser;
+  String linkedInUser;
   List<String> tags;
   List<String> classes;
 
@@ -53,7 +56,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('Hello!', style: Utils.proximaNova),
       smallSpacer,
       TextField(
-        decoration: Utils.textFieldDecoration,
+        decoration: Utils.textFieldDecoration(),
         controller: firstNameCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -65,7 +68,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('Last name'),
       smallSpacer,
       TextField(
-        decoration: Utils.textFieldDecoration,
+        decoration: Utils.textFieldDecoration(),
         controller: lastNameCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -86,7 +89,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('Intended major'),
       smallSpacer,
       TextField(
-        decoration: Utils.textFieldDecoration,
+        decoration: Utils.textFieldDecoration(),
         controller: majorCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -130,7 +133,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('A short bio'),
       smallSpacer,
       TextField(
-        decoration: Utils.textFieldDecoration,
+        decoration: Utils.textFieldDecoration(),
         controller: bioCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -142,18 +145,22 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _buildSocialMediaPage(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      children: [
-        Row(children: [
-          Text("Back"),
-          Spacer(),
-          Text("Skip"),
-        ],)
-        Text("Let's get connected!",
-            style: Theme.of(context).textTheme.headline2)
-      ],
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      bigSpacer,
+      Text("Let's get connected!",
+          style: Theme.of(context).textTheme.subtitle2),
+      bigSpacer,
+      Text(
+        "Enter your usernames on each social platform you have so people can connect with you after events!",
+        style: Theme.of(context).textTheme.bodyText1,
+      ),
+      smallSpacer,
+      Row(children: [
+        CircleAvatar(
+          child: Image.asset('assets/instagram_logo.png', width: 20),
+        )
+      ])
+    ]);
   }
 
   Widget _buildEventPage(BuildContext context) {
@@ -372,6 +379,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       _buildNamePage(context),
       _buildInfoPage(context),
       _buildEventPage(context),
+      _buildSocialMediaPage(context),
       _buildClassPage(context)
     ];
 

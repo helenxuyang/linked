@@ -30,6 +30,11 @@ class MyApp extends StatelessWidget {
                     color: Colors.black),
                 headline2: TextStyle(fontSize: 22, color: Colors.black),
                 headline3: TextStyle(fontSize: 18, color: Colors.black),
+                subtitle2: TextStyle(
+                    fontSize: 24,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold),
+                bodyText1: TextStyle(fontSize: 12, color: Colors.black),
               )),
           home: LoginPage(),
         ),
