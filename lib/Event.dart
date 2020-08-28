@@ -69,16 +69,16 @@ class EventCard extends StatelessWidget {
     double iconSize = 14;
 
     return SizedBox(
-        child: GestureDetector(
-      onTap: () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => EventPage(event)));
-      },
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => EventPage(event)));
+        },
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
             padding: EdgeInsets.all(24),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -109,52 +109,27 @@ class EventCard extends StatelessWidget {
                 ],
               ),
               Row(children: [
-                Text(event.title, style: titleStyle),
-                Row(
-                  children: [
-                    Icon(Icons.access_time, size: iconSize),
-                    SizedBox(width: 4),
-                    Text(
-                        DateFormat('E').format(event.startTime) +
-                            '. ' +
-                            DateFormat('MMMMd').format(event.startTime) +
-                            ' at ' +
-                            DateFormat('jm').format(event.startTime),
-                        style: logisticsStyle)
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.people, size: iconSize),
-                    SizedBox(width: 4),
-                    Text(
-                        event.attendeeIDs.length.toString() +
-                            '/' +
-                            event.maxAttendees.toString(),
-                        style: logisticsStyle),
-                  ],
-                ),
-                Row(children: [
-                  Text('Organizer:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 4),
-                  OrganizerChip(event.organizer)
-                ]),
-                Text(event.description, style: logisticsStyle),
-                SizedBox(height: 8),
-                Text(event.tags.map((tag) => '#' + tag).join('  '),
-                    style: secondaryStyle),
-                SizedBox(height: 8),
-                Row(children: [
-                  RSVPButton(event.eventID),
-                  SizedBox(width: 16),
-                  ShareButton()
-                ])
+                Text('Organizer:',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                SizedBox(width: 4),
+                OrganizerChip(event.organizer)
               ]),
-            ])),
+              Text(event.description, style: logisticsStyle),
+              SizedBox(height: 8),
+              Text(event.tags.map((tag) => '#' + tag).join('  '),
+                  style: secondaryStyle),
+              SizedBox(height: 8),
+              Row(children: [
+                RSVPButton(event.eventID),
+                SizedBox(width: 16),
+                ShareButton()
+              ])
+            ]),
+          ),
+        ),
       ),
-    ));
+    );
   }
 }
 

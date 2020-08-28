@@ -91,7 +91,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         onChanged: (newValue) {
                           setState(() {
                             _appName = newValue;
-                            if (newValue = "In Person") {
+                            if (newValue == "In Person") {
                               _isOnline = false;
                             } else {
                               _isOnline = true;
