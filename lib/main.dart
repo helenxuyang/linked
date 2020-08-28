@@ -27,6 +27,10 @@ class MyApp extends StatelessWidget {
                   fontSize: 32,
                   color: Colors.black
                 ),
+                headline2: TextStyle(
+                  fontSize: 20,
+                  color: Colors.black
+                )
               )
           ),
           home: LoginPage(),
