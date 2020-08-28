@@ -202,25 +202,25 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                         SizedBox(width: 8),
                                         Expanded(
                                           child: TextFormField(
-                                              initialValue: '10',
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                              validator: (value) {
-                                                if (noMax) return null;
-                                                if (value.isEmpty) {
-                                                  return 'Please enter a number.';
-                                                }
-                                                int num = int.parse(value);
-                                                if (num < 2) {
-                                                  return 'Must have more than 1 attendee (you count as one).';
-                                                }
-                                                return null;
-                                              },
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _maxAttendees = int.parse(value);
-                                                });
-                                              },
+                                            initialValue: '10',
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                            validator: (value) {
+                                              if (noMax) return null;
+                                              if (value.isEmpty) {
+                                                return 'Please enter a number.';
+                                              }
+                                              int num = int.parse(value);
+                                              if (num < 2) {
+                                                return 'Must have more than 1 attendee (you count as one).';
+                                              }
+                                              return null;
+                                            },
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _maxAttendees = int.parse(value);
+                                              });
+                                            },
                                           ),
                                         )
                                       ]
@@ -295,7 +295,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                         });
                                         Navigator.pop(context);
                                       }
-                                    });
+                                    }
+                                );
                               }
                           ),
                         ),
@@ -303,7 +304,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     ),
                   ),
                 ],
-
               )
           ),
         )

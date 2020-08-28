@@ -12,7 +12,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     String userID = Provider.of<CurrentUserInfo>(context).id;
     TextStyle subtitleStyle =
-        TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+    TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -27,8 +27,8 @@ class ProfilePage extends StatelessWidget {
                   padding: EdgeInsets.only(left: 0, right: 4),
                   child: Align(
                       child: Text('Back',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.normal)),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)
+                      ),
                       alignment: Alignment.centerLeft),
                   onPressed: () {
                     Navigator.pop(context);
@@ -44,7 +44,6 @@ class ProfilePage extends StatelessWidget {
                 return CircularProgressIndicator();
               }
               DocumentSnapshot doc = snapshot.data;
-              String userID = Provider.of<CurrentUserInfo>(context).id;
               return Expanded(
                 child: Scrollbar(
                   child: ListView(children: [
@@ -75,7 +74,12 @@ class ProfilePage extends StatelessWidget {
                     Text('Classes', style: subtitleStyle),
                     Wrap(
                       children: List<String>.from(doc.get('classes'))
-                          .map((str) => InputChip(label: Text(str)))
+                          .map((str) =>
+                          InputChip(
+                            labelStyle: TextStyle(color: Colors.grey[700]),
+                            label: Text(str),
+                            backgroundColor: Colors.blue,
+                          ))
                           .toList(),
                       spacing: 4,
                       runSpacing: -8,
@@ -85,8 +89,8 @@ class ProfilePage extends StatelessWidget {
                     StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('events')
-                            .where('attendees', arrayContains: userID)
-                            .where('dateTime', isGreaterThan: Timestamp.now())
+                            .where('attendees', arrayContains: id)
+                            .where('startTime', isGreaterThan: Timestamp.now())
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) {
@@ -100,8 +104,8 @@ class ProfilePage extends StatelessWidget {
                               scrollDirection: Axis.horizontal,
                               child: Row(children: List<EventCard>.from(
                                   snapshot.data.documents.map((doc) {
-                                return EventCard(Event.fromDoc(doc));
-                              }))));
+                                    return EventCard(Event.fromDoc(doc));
+                                  }))));
                         })
                   ]),
                 ),

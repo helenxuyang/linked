@@ -215,7 +215,8 @@ class EventPage extends StatelessWidget {
                       alignment: Alignment.centerLeft),
                   onPressed: () {
                     Navigator.pop(context);
-                  }),
+                  }
+              ),
             ),
             Text(event.title,
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
@@ -285,7 +286,9 @@ class PersonChip extends StatelessWidget {
           child: ClipOval(
               child: Image.network(
                 doc.get('photoURL'),
-              ))),
+              )
+          )
+      ),
       label: Text(doc.get('firstName') + ' ' + doc.get('lastName'),
           style: TextStyle(color: Theme.of(context).accentColor)),
       onPressed: () {
@@ -293,7 +296,12 @@ class PersonChip extends StatelessWidget {
             context,
             MaterialPageRoute(
                 builder: (context) => Scaffold(
-                    body: ProfilePage(FieldPath.documentId.toString()))));
+                    body: SafeArea(
+                        child: ProfilePage(doc.id)
+                    )
+                )
+            )
+        );
       },
     );
   }
