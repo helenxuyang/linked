@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'Login.dart';
 import 'main.dart';
+import 'Utils.dart';
 
 class OnboardingPage extends StatefulWidget {
   @override
@@ -49,9 +50,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('What should we call you?',
           style: Theme.of(context).textTheme.headline2),
       bigSpacer,
-      Text('First name'),
+      Text('Hello!', style: Utils.proximaNova),
       smallSpacer,
       TextField(
+        decoration: Utils.textFieldDecoration,
         controller: firstNameCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -63,6 +65,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('Last name'),
       smallSpacer,
       TextField(
+        decoration: Utils.textFieldDecoration,
         controller: lastNameCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -83,6 +86,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('Intended major'),
       smallSpacer,
       TextField(
+        decoration: Utils.textFieldDecoration,
         controller: majorCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -126,6 +130,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('A short bio'),
       smallSpacer,
       TextField(
+        decoration: Utils.textFieldDecoration,
         controller: bioCtrl,
         onSubmitted: (value) {
           setState(() {
@@ -134,6 +139,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
         },
       ),
     ]);
+  }
+
+  Widget _buildSocialMediaPage(BuildContext context) {
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        Row(children: [
+          Text("Back"),
+          Spacer(),
+          Text("Skip"),
+        ],)
+        Text("Let's get connected!",
+            style: Theme.of(context).textTheme.headline2)
+      ],
+    );
   }
 
   Widget _buildEventPage(BuildContext context) {
