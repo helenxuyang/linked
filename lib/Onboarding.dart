@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -307,10 +308,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
         child: Text('Finish'),
         onPressed: () {
           String userID = Provider.of<CurrentUserInfo>(context, listen: false).id;
+          User user = FirebaseAuth.instance.currentUser;
           FirebaseFirestore.instance.collection('users').doc(userID).set(
               {
                 'firstName': firstNameCtrl.text,
                 'lastName': lastNameCtrl.text,
+                'photoURL': user.photoURL,
                 'major': majorCtrl.text,
                 'classYear': gradYear,
                 'classes': classes,

@@ -23,6 +23,7 @@ class CurrentUserInfo with ChangeNotifier{
 
     if (isSignedIn) {
       user = _auth.currentUser;
+
     }
     else {
       final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
