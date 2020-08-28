@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import 'Login.dart';
 
-class EventCard extends StatelessWidget {
-  EventCard.fromDoc(DocumentSnapshot doc) :
+class Event {
+  Event(this.eventID, this.title, this.tags, this.description, this.organizer, this.dateTime, this.app, this.url, this.currentAttendees, this.maxAttendees);
+  Event.fromDoc(DocumentSnapshot doc) :
         eventID = doc.id,
         title = doc.get('title'),
         tags = List<String>.from(doc.get('tags')),
@@ -18,7 +18,6 @@ class EventCard extends StatelessWidget {
         currentAttendees = doc.get('currentAttendees'),
         maxAttendees = doc.get('maxAttendees');
 
-  EventCard(this.eventID, this.title, this.tags, this.description, this.organizer, this.dateTime, this.app, this.url, this.currentAttendees, this.maxAttendees);
   final String eventID;
   final String title;
   final List<String> tags;
@@ -29,6 +28,10 @@ class EventCard extends StatelessWidget {
   final String url;
   final int currentAttendees;
   final int maxAttendees;
+}
+class EventCard extends StatelessWidget {
+  EventCard(this.event);
+  final Event event;
 
   Future<DocumentSnapshot> retrieveUserDoc(String userID) {
     return FirebaseFirestore.instance.collection('users').doc(userID).get();
@@ -62,26 +65,26 @@ class EventCard extends StatelessWidget {
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: titleStyle),
+                  Text(event.title, style: titleStyle),
                   SizedBox(height: 8),
                   Row(
                       children: [
                         Icon(Icons.calendar_today),
                         SizedBox(width: 4),
-                        Text(DateFormat('E').add_MMMd().format(dateTime), style: logisticsStyle),
+                        Text(DateFormat('E').add_MMMd().format(event.dateTime), style: logisticsStyle),
                         SizedBox(width: 16),
                         Icon(Icons.access_time),
                         SizedBox(width: 4),
-                        Text(DateFormat('jm').format(dateTime), style: logisticsStyle),
+                        Text(DateFormat('jm').format(event.dateTime), style: logisticsStyle),
                         SizedBox(width: 16),
                         Icon(Icons.person),
                         SizedBox(width: 4),
-                        Text(currentAttendees.toString() + '/' + maxAttendees.toString(), style: logisticsStyle),
+                        Text(event.currentAttendees.toString() + '/' + event.maxAttendees.toString(), style: logisticsStyle),
                       ]
                   ),
                   SizedBox(height: 8),
                   FutureBuilder(
-                    future: retrieveUserDoc(organizer),
+                    future: retrieveUserDoc(event.organizer),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         print(snapshot.error);
@@ -95,15 +98,15 @@ class EventCard extends StatelessWidget {
                     },
                   ),
                   SizedBox(height: 8),
-                  Text(description),
+                  Text(event.description),
                   SizedBox(height: 8),
-                  Text(tags.map((tag) => '#' + tag).join('  '), style: secondaryStyle),
+                  Text(event.tags.map((tag) => '#' + tag).join('  '), style: secondaryStyle),
                   Padding(
                     padding: EdgeInsets.only(top: 8, bottom: 8),
                   ),
                   Row(
                       children: [
-                        RSVPButton(eventID),
+                        RSVPButton(event.eventID),
                         SizedBox(width: 16),
                         OutlineButton(
                             borderSide: BorderSide(color: Colors.blue),

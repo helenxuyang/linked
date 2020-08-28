@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Event.dart';
 
-class UserEventsPage extends StatelessWidget {
+class SchedulePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String userID = Provider.of<CurrentUserInfo>(context).id;
@@ -51,7 +51,7 @@ class UserEventsPage extends StatelessWidget {
                             return Container();
                           }
                           DocumentSnapshot eventDoc = snapshot.data;
-                          return EventCard.fromDoc(eventDoc);
+                          return EventCard(Event.fromDoc(eventDoc));
                         }
                     );
                   },

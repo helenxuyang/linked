@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Home.dart';
-import 'UserEvents.dart';
+import 'Schedule.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +50,7 @@ class _MainPageState extends State<MainPage> {
       case HOME:
         return HomePage();
       case USEREVENTS:
-        return UserEventsPage();
+        return SchedulePage();
       case PROFILE:
         return Column();
       default:

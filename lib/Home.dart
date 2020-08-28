@@ -7,34 +7,38 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(16),
-      child: Column(children: [
-        Padding(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Row(children: [
-            Text('Discover Events',
-                style: Theme.of(context).textTheme.headline1),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.filter_list),
-              onPressed: () {
-                //TODO: add filter options
-              },
+      child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Row(children: [
+                Text('Discover Events',
+                    style: Theme.of(context).textTheme.headline1),
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.filter_list),
+                  onPressed: () {
+                    //TODO: add filter options
+                  },
+                )
+              ]),
+            ),
+            Expanded(
+              child: ListView(children: [EventGroup('water')]),
+            ),
+            FloatingActionButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return CreateEvent();
+                      }
+                  );
+                },
+                child: Icon(Icons.add)
             )
-          ]),
-        ),
-        Expanded(
-          child: ListView(children: [EventGroup('water')]),
-        ),
-        FloatingActionButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return CreateEvent();
-                  });
-            },
-            child: Icon(Icons.add))
-      ]),
+          ]
+      ),
     );
   }
 }
@@ -42,6 +46,7 @@ class HomePage extends StatelessWidget {
 class EventGroup extends StatelessWidget {
   EventGroup(this.tag);
   final String tag;
+
   @override
   Widget build(BuildContext context) {
     return Column(mainAxisSize: MainAxisSize.min, children: [
@@ -61,13 +66,16 @@ class EventGroup extends StatelessWidget {
               if (!snapshot.hasData) {
                 return CircularProgressIndicator();
               }
-              return Row(children:
-                  List<EventCard>.from(snapshot.data.documents.map((doc) {
-                return EventCard.fromDoc(doc);
-              })));
+              return Row(
+                  children: List<EventCard>.from(snapshot.data.documents.map((doc) {
+                    return EventCard(Event.fromDoc(doc));
+                  }))
+              );
             },
-          ))
-    ]);
+          )
+      )
+    ]
+    );
   }
 }
 
