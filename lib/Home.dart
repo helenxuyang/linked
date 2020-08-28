@@ -28,11 +28,8 @@ class HomePage extends StatelessWidget {
         ),
         FloatingActionButton(
             onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return CreateEvent();
-                  });
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => CreateEventPage()));
             },
             child: Icon(Icons.add))
       ]),
