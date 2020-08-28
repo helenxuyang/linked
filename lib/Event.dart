@@ -7,14 +7,15 @@ import 'Profile.dart';
 
 class Event {
   Event(this.eventID, this.title, this.tags, this.description, this.organizer,
-      this.dateTime, this.app, this.url, this.attendeeIDs, this.maxAttendees);
+      this.startTime, this.endTime, this.app, this.url, this.attendeeIDs, this.maxAttendees);
   Event.fromDoc(DocumentSnapshot doc)
       : eventID = doc.id,
         title = doc.get('title'),
         tags = List<String>.from(doc.get('tags')),
         description = doc.get('description'),
         organizer = doc.get('organizerID'),
-        dateTime = doc.get('dateTime').toDate(),
+        startTime = doc.get('startTime').toDate(),
+        endTime = doc.get('endTime').toDate(),
         app = doc.get('appName'),
         url = doc.get('appURL'),
         attendeeIDs = List<String>.from(doc.get('attendees')),
@@ -25,7 +26,8 @@ class Event {
   final List<String> tags;
   final String description;
   final String organizer;
-  final DateTime dateTime;
+  final DateTime startTime;
+  final DateTime endTime;
   final String app;
   final String url;
   final List<String> attendeeIDs;
@@ -69,7 +71,7 @@ class EventCard extends StatelessWidget {
                   children: [
                     Icon(Icons.access_time, size: iconSize),
                     SizedBox(width: 4),
-                    Text(DateFormat('E').format(event.dateTime) + '. ' + DateFormat('MMMMd').format(event.dateTime) + ' at ' + DateFormat('jm').format(event.dateTime),
+                    Text(DateFormat('E').format(event.startTime) + '. ' + DateFormat('MMMMd').format(event.startTime) + ' at ' + DateFormat('jm').format(event.startTime),
                         style: logisticsStyle),
                   ],
                 ),
@@ -124,11 +126,7 @@ class EventRow extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(event.title, style: TextStyle(fontSize: 16)),
                 Text(
-                    DateFormat('E').format(event.dateTime) +
-                        '. ' +
-                        DateFormat('MMMMd').format(event.dateTime) +
-                        ' at ' +
-                        DateFormat('jm').format(event.dateTime),
+                    DateFormat('E').format(event.startTime) + '. ' + DateFormat('MMMMd').format(event.startTime) + ' at ' + DateFormat('jm').format(event.startTime),
                     style: TextStyle(
                         fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
               ]),
@@ -174,11 +172,11 @@ class EventPage extends StatelessWidget {
             Text(event.title,
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             Text(
-                DateFormat('EEEE').format(event.dateTime) +
+                DateFormat('EEEE').format(event.startTime) +
                     ', ' +
-                    DateFormat('MMMMd').format(event.dateTime) +
+                    DateFormat('MMMMd').format(event.startTime) +
                     ' at ' +
-                    DateFormat('jm').format(event.dateTime),
+                    DateFormat('jm').format(event.startTime),
                 style: TextStyle(
                     fontSize: 14,
                     color: Color.fromRGBO(0xEB, 0x8a, 0x90, 1.0))),

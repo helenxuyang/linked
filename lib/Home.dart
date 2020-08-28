@@ -5,28 +5,42 @@ import 'Event.dart';
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(24),
-      child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: Row(children: [
-                Text('Discover Events',
-                    style: Theme.of(context).textTheme.headline1),
-                Spacer(),
-                IconButton(
-                  icon: Icon(Icons.filter_list),
-                  onPressed: () {
-                    //TODO: add filter options
-                  },
-                )
-              ]),
+    return Stack(
+      children: [
+        Padding(
+          padding: EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Row(children: [
+                      Text('Discover Events',
+                          style: Theme.of(context).textTheme.headline1),
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.filter_list),
+                        onPressed: () {
+                          //TODO: add filter options
+                        },
+                      )
+                    ]),
+                  ),
+                  LiveEventGroup(),
+                  SizedBox(height: 24),
+                  Column(
+
+                      //TODO: use tags from backend
+                      children: [TagEventGroup('virtual')]
+                  ),
+                ]
             ),
-            Expanded(
-              child: ListView(children: [EventGroup('virtual')]),
-            ),
-            FloatingActionButton(
+          ),
+        ),
+        Positioned(
+            bottom: 16,
+            right: 8,
+            child: FloatingActionButton(
                 onPressed: () {
                   showDialog(
                       context: context,
@@ -37,44 +51,91 @@ class HomePage extends StatelessWidget {
                 },
                 child: Icon(Icons.add)
             )
-          ]
-      ),
+        ),
+      ],
     );
   }
 }
 
-class EventGroup extends StatelessWidget {
-  EventGroup(this.tag);
+class LiveEventGroup extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return
+      StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('events')
+            .where('startTime', isLessThan: Timestamp.now())
+            .orderBy('startTime')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          List<DocumentSnapshot> docs = List<DocumentSnapshot>.from(snapshot.data.documents).where((doc) {
+            return doc.get('endTime').toDate().isAfter(DateTime.now());
+          }).toList();
+          if (docs.isEmpty) {
+            return Container();
+          }
+          return Column(
+              children: [
+                Row(
+                    children: [
+                      Text('Happening Now', style: TextStyle(fontSize: 22)),
+                      Spacer(),
+                      Text('view more', style: TextStyle(fontSize: 14))
+                    ]
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                      children: List<EventCard>.from(
+                          docs.map((doc) {
+                            return EventCard(Event.fromDoc(doc));
+                          }))
+                  ),
+                )
+              ]
+          );
+        },
+      );
+  }
+}
+
+class TagEventGroup extends StatelessWidget {
+  TagEventGroup(this.tag);
   final String tag;
 
   @override
   Widget build(BuildContext context) {
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      Row(children: [
-        Text(tag, style: TextStyle(fontSize: 22)),
-        Spacer(),
-        Text('view more', style: TextStyle(fontSize: 14))
-      ]),
-      SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: StreamBuilder(
-            stream: FirebaseFirestore.instance
-                .collection('events')
-                .where('tags', arrayContains: tag)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return CircularProgressIndicator();
-              }
-              return Row(
-                  children: List<EventCard>.from(snapshot.data.documents.map((doc) {
-                    return EventCard(Event.fromDoc(doc));
-                  }))
-              );
-            },
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(children: [
+            Text(tag, style: TextStyle(fontSize: 22)),
+            Spacer(),
+            Text('view more', style: TextStyle(fontSize: 14))
+          ]
+          ),
+          SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('events')
+                    .where('tags', arrayContains: tag)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return CircularProgressIndicator();
+                  }
+                  return Row(
+                      children: List<EventCard>.from(snapshot.data.documents.map((doc) {
+                        return EventCard(Event.fromDoc(doc));
+                      }))
+                  );
+                },
+              )
           )
-      )
-    ]
+        ]
     );
   }
 }
