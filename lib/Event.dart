@@ -6,16 +6,31 @@ import 'Login.dart';
 import 'Profile.dart';
 
 class Event {
-  Event(this.eventID, this.title, this.tags, this.description, this.organizer,
-      this.dateTime, this.app, this.url, this.attendeeIDs, this.maxAttendees);
+  static final List<String> appOptions = ['Google Meets', 'Zoom', 'In Person'];
+
+  Event(
+      this.eventID,
+      this.title,
+      this.tags,
+      this.description,
+      this.organizer,
+      this.startTime,
+      this.endTime,
+      this.isOnline,
+      this.app,
+      this.url,
+      this.attendeeIDs,
+      this.maxAttendees);
   Event.fromDoc(DocumentSnapshot doc)
       : eventID = doc.id,
         title = doc.get('title'),
         tags = List<String>.from(doc.get('tags')),
         description = doc.get('description'),
         organizer = doc.get('organizerID'),
-        dateTime = doc.get('dateTime').toDate(),
+        startTime = doc.get('startTime').toDate(),
+        endTime = doc.get('endTime').toDate(),
         app = doc.get('appName'),
+        isOnline = doc.get('isOnline'),
         url = doc.get('appURL'),
         attendeeIDs = List<String>.from(doc.get('attendees')),
         maxAttendees = doc.get('maxAttendees');
@@ -25,11 +40,13 @@ class Event {
   final List<String> tags;
   final String description;
   final String organizer;
-  final DateTime dateTime;
+  final DateTime startTime;
+  final DateTime endTime;
   final String app;
   final String url;
   final List<String> attendeeIDs;
   final int maxAttendees;
+  final bool isOnline;
 }
 
 class EventCard extends StatelessWidget {
@@ -44,17 +61,18 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     TextStyle titleStyle = TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
     TextStyle logisticsStyle = TextStyle(fontSize: 16);
-    TextStyle subtitleStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
-    TextStyle secondaryStyle = TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey);
+    TextStyle subtitleStyle =
+        TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+    TextStyle secondaryStyle = TextStyle(
+        fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey);
 
     double iconSize = 14;
 
     return SizedBox(
-
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => EventPage(event)));
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => EventPage(event)));
         },
         child: Card(
             shape: RoundedRectangleBorder(
@@ -62,45 +80,53 @@ class EventCard extends StatelessWidget {
             ),
             child: Padding(
               padding: EdgeInsets.all(24),
-              child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(event.title, style: titleStyle),
-                Row(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.access_time, size: iconSize),
-                    SizedBox(width: 4),
-                    Text(DateFormat('E').format(event.dateTime) + '. ' + DateFormat('MMMMd').format(event.dateTime) + ' at ' + DateFormat('jm').format(event.dateTime),
-                        style: logisticsStyle)
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.people, size: iconSize),
-                    SizedBox(width: 4),
-                    Text(event.attendeeIDs.length.toString() + '/' + event.maxAttendees.toString(),
-                        style: logisticsStyle),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text('Organizer:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    SizedBox(width: 4),
-                    OrganizerChip(event.organizer)
-                  ]
-                ),
-                Text(event.description, style: logisticsStyle),
-                SizedBox(height: 8),
-                Text(event.tags.map((tag) => '#' + tag).join('  '),
-                    style: secondaryStyle),
-                SizedBox(height: 8),
-                Row(children: [
-                  RSVPButton(event.eventID),
-                  SizedBox(width: 16),
-                  ShareButton()
-                ])
-              ]),
-            )
-        ),
+                    Text(event.title, style: titleStyle),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time, size: iconSize),
+                        SizedBox(width: 4),
+                        Text(
+                            DateFormat('E').format(event.startTime) +
+                                '. ' +
+                                DateFormat('MMMMd').format(event.startTime) +
+                                ' at ' +
+                                DateFormat('jm').format(event.startTime),
+                            style: logisticsStyle)
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.people, size: iconSize),
+                        SizedBox(width: 4),
+                        Text(
+                            event.attendeeIDs.length.toString() +
+                                '/' +
+                                event.maxAttendees.toString(),
+                            style: logisticsStyle),
+                      ],
+                    ),
+                    Row(children: [
+                      Text('Organizer:',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      SizedBox(width: 4),
+                      OrganizerChip(event.organizer)
+                    ]),
+                    Text(event.description, style: logisticsStyle),
+                    SizedBox(height: 8),
+                    Text(event.tags.map((tag) => '#' + tag).join('  '),
+                        style: secondaryStyle),
+                    SizedBox(height: 8),
+                    Row(children: [
+                      RSVPButton(event.eventID),
+                      SizedBox(width: 16),
+                      ShareButton()
+                    ])
+                  ]),
+            )),
       ),
     );
   }
@@ -118,26 +144,26 @@ class EventRow extends StatelessWidget {
       },
       child: Card(
           child: Padding(
-            padding:
+        padding:
             const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
-            child: Row(children: [
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(event.title, style: TextStyle(fontSize: 16)),
-                Text(
-                    DateFormat('E').format(event.dateTime) +
-                        '. ' +
-                        DateFormat('MMMMd').format(event.dateTime) +
-                        ' at ' +
-                        DateFormat('jm').format(event.dateTime),
-                    style: TextStyle(
-                        fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
-              ]),
-              Spacer(),
-              Icon(Icons.people),
-              SizedBox(width: 2),
-              Text(event.attendeeIDs.length.toString())
-            ]),
-          )),
+        child: Row(children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(event.title, style: TextStyle(fontSize: 16)),
+            Text(
+                DateFormat('E').format(event.startTime) +
+                    '. ' +
+                    DateFormat('MMMMd').format(event.startTime) +
+                    ' at ' +
+                    DateFormat('jm').format(event.startTime),
+                style: TextStyle(
+                    fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
+          ]),
+          Spacer(),
+          Icon(Icons.people),
+          SizedBox(width: 2),
+          Text(event.attendeeIDs.length.toString())
+        ]),
+      )),
     );
   }
 }
@@ -149,13 +175,13 @@ class EventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle subtitleStyle =
-    TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+        TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child:
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
               width: 50,
               child: FlatButton(
@@ -174,11 +200,11 @@ class EventPage extends StatelessWidget {
             Text(event.title,
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             Text(
-                DateFormat('EEEE').format(event.dateTime) +
+                DateFormat('EEEE').format(event.startTime) +
                     ', ' +
-                    DateFormat('MMMMd').format(event.dateTime) +
+                    DateFormat('MMMMd').format(event.startTime) +
                     ' at ' +
-                    DateFormat('jm').format(event.dateTime),
+                    DateFormat('jm').format(event.startTime),
                 style: TextStyle(
                     fontSize: 14,
                     color: Color.fromRGBO(0xEB, 0x8a, 0x90, 1.0))),
@@ -215,7 +241,7 @@ class EventPage extends StatelessWidget {
                   }
                   DocumentSnapshot eventDoc = snapshot.data;
                   List<String> attendeeIDs =
-                  List<String>.from(eventDoc.get('attendees'));
+                      List<String>.from(eventDoc.get('attendees'));
                   return AttendeeChips(attendeeIDs);
                 })
           ]),
@@ -233,22 +259,20 @@ class PersonChip extends StatelessWidget {
     return InputChip(
       backgroundColor: Colors.transparent,
       shape: StadiumBorder(
-          side: BorderSide(
-              color: Theme.of(context).accentColor,
-              width: 1
-          )
-      ),
+          side: BorderSide(color: Theme.of(context).accentColor, width: 1)),
       avatar: CircleAvatar(
           child: ClipOval(
               child: Image.network(
-                doc.get('photoURL'),
-              )
-          )
-      ),
+        doc.get('photoURL'),
+      ))),
       label: Text(doc.get('firstName') + ' ' + doc.get('lastName'),
           style: TextStyle(color: Theme.of(context).accentColor)),
       onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => Scaffold(body: ProfilePage(FieldPath.documentId.toString()))));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Scaffold(
+                    body: ProfilePage(FieldPath.documentId.toString()))));
       },
     );
   }
@@ -261,41 +285,35 @@ class OrganizerChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: FirebaseFirestore.instance
-            .collection('users')
-            .doc(id)
-            .get(),
+        future: FirebaseFirestore.instance.collection('users').doc(id).get(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Container();
           }
           DocumentSnapshot organizerDoc = snapshot.data;
           return PersonChip(organizerDoc);
-        }
-    );
+        });
   }
 }
+
 class AttendeeChips extends StatelessWidget {
   AttendeeChips(this.attendeeIDs);
   final List<String> attendeeIDs;
   @override
   Widget build(BuildContext context) {
     return Wrap(
-        children: attendeeIDs.map((id) {
-          return FutureBuilder(
-              future: FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(id)
-                  .get(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Container();
-                }
-                DocumentSnapshot attendeeDoc = snapshot.data;
-                return PersonChip(attendeeDoc);
+      children: attendeeIDs.map((id) {
+        return FutureBuilder(
+            future:
+                FirebaseFirestore.instance.collection('users').doc(id).get(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Container();
               }
-          );
-        }).toList(),
+              DocumentSnapshot attendeeDoc = snapshot.data;
+              return PersonChip(attendeeDoc);
+            });
+      }).toList(),
       spacing: 8,
     );
   }
@@ -307,7 +325,7 @@ class ShareButton extends StatelessWidget {
     return OutlineButton(
         borderSide: BorderSide(color: Colors.blue),
         shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         child: Text('SHARE', style: TextStyle(color: Colors.blue)),
         onPressed: () {
           //TODO: add share
@@ -327,7 +345,7 @@ class _RSVPButtonState extends State<RSVPButton> {
 
   void addSignUp(String userID, String eventID) async {
     DocumentReference userDoc =
-    FirebaseFirestore.instance.collection('users').doc(userID);
+        FirebaseFirestore.instance.collection('users').doc(userID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot userSnap = await transaction.get(userDoc);
       transaction.update(
@@ -335,7 +353,7 @@ class _RSVPButtonState extends State<RSVPButton> {
     });
 
     DocumentReference eventDoc =
-    FirebaseFirestore.instance.collection('events').doc(eventID);
+        FirebaseFirestore.instance.collection('events').doc(eventID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot eventSnap = await transaction.get(eventDoc);
       transaction.update(eventSnap.reference,
@@ -345,7 +363,7 @@ class _RSVPButtonState extends State<RSVPButton> {
 
   void removeSignUp(String userID, String eventID) async {
     DocumentReference userDoc =
-    FirebaseFirestore.instance.collection('users').doc(userID);
+        FirebaseFirestore.instance.collection('users').doc(userID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot userSnap = await transaction.get(userDoc);
       transaction.update(userSnap.reference,
@@ -353,7 +371,7 @@ class _RSVPButtonState extends State<RSVPButton> {
     });
 
     DocumentReference eventDoc =
-    FirebaseFirestore.instance.collection('events').doc(eventID);
+        FirebaseFirestore.instance.collection('events').doc(eventID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot eventSnap = await transaction.get(eventDoc);
       transaction.update(eventSnap.reference,
@@ -387,42 +405,38 @@ class _RSVPButtonState extends State<RSVPButton> {
           }
           DocumentSnapshot userDoc = snapshot.data;
           bool signedUp =
-          List<String>.from(userDoc.get('events')).contains(widget.eventID);
+              List<String>.from(userDoc.get('events')).contains(widget.eventID);
           return signedUp
               ? FlatButton(
-              color: Theme.of(context).accentColor,
-              disabledColor: Colors.transparent,
-              textColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.check),
-                  SizedBox(width: 2),
-                  Text('SIGNED UP'),
-                ]
-              ),
-              onPressed: disabled
-                  ? null
-                  : () {
-                disable();
-                removeSignUp(userID, widget.eventID);
-              })
+                  color: Theme.of(context).accentColor,
+                  disabledColor: Colors.transparent,
+                  textColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(children: [
+                    Icon(Icons.check),
+                    SizedBox(width: 2),
+                    Text('SIGNED UP'),
+                  ]),
+                  onPressed: disabled
+                      ? null
+                      : () {
+                          disable();
+                          removeSignUp(userID, widget.eventID);
+                        })
               : FlatButton(
-              color: Theme.of(context).accentColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0)),
-              child: Text('RSVP',
-                  style: TextStyle(color: Colors.white)),
-
-              onPressed: disabled
-                  ? null
-                  : () {
-                //TODO: create email screen
-                disable();
-                addSignUp(userID, widget.eventID);
-              });
+                  color: Theme.of(context).accentColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0)),
+                  child: Text('RSVP', style: TextStyle(color: Colors.white)),
+                  onPressed: disabled
+                      ? null
+                      : () {
+                          //TODO: create email screen
+                          disable();
+                          addSignUp(userID, widget.eventID);
+                        });
         });
   }
 }
@@ -430,7 +444,7 @@ class _RSVPButtonState extends State<RSVPButton> {
 class EventMethods {
   static Future<bool> retrieveSignedUp(String userID, String eventID) {
     DocumentReference userDoc =
-    FirebaseFirestore.instance.collection('users').doc(userID);
+        FirebaseFirestore.instance.collection('users').doc(userID);
     return userDoc
         .get()
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
