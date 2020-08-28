@@ -21,6 +21,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   // google ID of event organizer
   List<String> _tags = [];
   String _title;
+  bool _isOnline;
 
   TextEditingController tagCtrl = TextEditingController();
 
@@ -30,6 +31,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
     pageIndex = 0;
     _startTime = DateTime.now();
     _endTime = _startTime.add(new Duration(hours: 1));
+    _isOnline = true;
   }
 
   void setDateAndTime(DateTime date, TimeOfDay time) {
@@ -89,6 +91,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         onChanged: (newValue) {
                           setState(() {
                             _appName = newValue;
+                            if (newValue = "In Person") {
+                              _isOnline = false;
+                            } else {
+                              _isOnline = true;
+                            }
                           });
                         }),
                     SizedBox(height: 18),
@@ -124,11 +131,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       'appName': _appName,
                       'appURL': _appURL,
                       'attendees': [_organizerID],
-                      'startTime': Timestamp.fromDate(_startTime),
-                      'endTime': Timestamp.fromDate(_endTime),
                       'description': _description,
+                      'endTime': Timestamp.fromDate(_endTime),
+                      'isOnline': _isOnline,
                       'maxAttendees': _maxAttendees,
                       'organizerID': _organizerID,
+                      'startTime': Timestamp.fromDate(_startTime),
                       'tags': _tags,
                       'title': _title,
                     });
