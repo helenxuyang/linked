@@ -27,8 +27,18 @@ class MyApp extends StatelessWidget {
                   headline1: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 32,
-                      color: Colors.black),
-                  headline2: TextStyle(fontSize: 20, color: Colors.black))),
+                      color: Colors.black
+                  ),
+                  headline2: TextStyle(
+                      fontSize: 22,
+                      color: Colors.black
+                  ),
+                headline3: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black
+                ),
+              )
+          ),
           home: LoginPage(),
         ),
         create: (context) => CurrentUserInfo());

@@ -70,14 +70,14 @@ class EventCard extends StatelessWidget {
                     Icon(Icons.access_time, size: iconSize),
                     SizedBox(width: 4),
                     Text(DateFormat('E').format(event.dateTime) + '. ' + DateFormat('MMMMd').format(event.dateTime) + ' at ' + DateFormat('jm').format(event.dateTime),
-                        style: logisticsStyle),
+                        style: logisticsStyle)
                   ],
                 ),
                 Row(
                   children: [
                     Icon(Icons.people, size: iconSize),
                     SizedBox(width: 4),
-                    Text(event.attendeeIDs.length.toString() + '/' + event.maxAttendees.toString() + ' attendees',
+                    Text(event.attendeeIDs.length.toString() + '/' + event.maxAttendees.toString(),
                         style: logisticsStyle),
                   ],
                 ),
@@ -295,7 +295,8 @@ class AttendeeChips extends StatelessWidget {
                 return PersonChip(attendeeDoc);
               }
           );
-        }).toList()
+        }).toList(),
+      spacing: 8,
     );
   }
 }
@@ -390,25 +391,31 @@ class _RSVPButtonState extends State<RSVPButton> {
           return signedUp
               ? FlatButton(
               color: Theme.of(context).accentColor,
-              disabledColor: Colors.white,
+              disabledColor: Colors.transparent,
               textColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
-              child: Text('SIGNED UP'),
+              child: Row(
+                children: [
+                  Icon(Icons.check),
+                  SizedBox(width: 2),
+                  Text('SIGNED UP'),
+                ]
+              ),
               onPressed: disabled
                   ? null
                   : () {
                 disable();
                 removeSignUp(userID, widget.eventID);
               })
-              : OutlineButton(
-              borderSide: BorderSide(color: Theme.of(context).accentColor),
+              : FlatButton(
+              color: Theme.of(context).accentColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30.0)),
               child: Text('RSVP',
-                  style: TextStyle(color: Theme.of(context).accentColor)),
-              disabledBorderColor: Colors.white,
+                  style: TextStyle(color: Colors.white)),
+
               onPressed: disabled
                   ? null
                   : () {
