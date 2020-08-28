@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Home.dart';
-import 'UserEvents.dart';
+import 'Schedule.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,15 +18,16 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(
+              fontFamily: 'Proxima-Nova',
               primarySwatch: Colors.blue,
               accentColor: Color.fromRGBO(0x2d, 0x82, 0xB7, 1.0),
               visualDensity: VisualDensity.adaptivePlatformDensity,
               textTheme: TextTheme(
-                headline1: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
-                    color: Colors.black),
-              )),
+                  headline1: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 32,
+                      color: Colors.black),
+                  headline2: TextStyle(fontSize: 20, color: Colors.black))),
           home: LoginPage(),
         ),
         create: (context) => CurrentUserInfo());
@@ -40,7 +41,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   static const int HOME = 0;
-  static const int USEREVENTS = 1;
+  static const int SCHEDULE = 1;
   static const int PROFILE = 2;
 
   int currentIndex = 0;
@@ -49,8 +50,8 @@ class _MainPageState extends State<MainPage> {
     switch (currentIndex) {
       case HOME:
         return HomePage();
-      case USEREVENTS:
-        return UserEventsPage();
+      case SCHEDULE:
+        return SchedulePage();
       case PROFILE:
         return Column();
       default:
@@ -68,7 +69,7 @@ class _MainPageState extends State<MainPage> {
               BottomNavigationBarItem(
                   icon: Icon(Icons.home), title: Text('Home')),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_today), title: Text('My Events')),
+                  icon: Icon(Icons.calendar_today), title: Text('Schedule')),
               BottomNavigationBarItem(
                   icon: Icon(Icons.person), title: Text('Profile'))
             ],

@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'main.dart';
+import 'Onboarding.dart';
 
 class CurrentUserInfo with ChangeNotifier{
   String id;
@@ -22,6 +23,7 @@ class CurrentUserInfo with ChangeNotifier{
 
     if (isSignedIn) {
       user = _auth.currentUser;
+
     }
     else {
       final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
@@ -35,12 +37,15 @@ class CurrentUserInfo with ChangeNotifier{
   void signIn(BuildContext context) async {
     User user = await _handleSignIn();
     setID(user.uid);
-    if (user != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
-    }
-    else {
-      FirebaseFirestore.instance.collection('users').doc(user.uid).set({'email': user.email});
-    }
+    FirebaseFirestore.instance.collection('users').doc(user.uid).get().then((snapshot) {
+      if (snapshot == null || !snapshot.exists) {
+        //TODO: add to users database
+        Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingPage()));
+      }
+      else {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
+      }
+    });
   }
 
   Future<void> signOut() async {
