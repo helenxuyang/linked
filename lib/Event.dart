@@ -6,47 +6,45 @@ import 'Login.dart';
 import 'Profile.dart';
 
 class Event {
-  static final List<String> appOptions = ['Google Meets', 'Zoom', 'In Person'];
+  static final List<String> appOptions = ['Virtual', 'In Person'];
 
   Event(
       this.eventID,
       this.title,
-      this.tags,
+      this.isVirtual,
+      this.location,
       this.description,
       this.organizer,
       this.startTime,
       this.endTime,
-      this.isOnline,
-      this.app,
-      this.url,
       this.attendeeIDs,
-      this.maxAttendees);
+      this.maxAttendees,
+      this.tags);
+
   Event.fromDoc(DocumentSnapshot doc)
       : eventID = doc.id,
         title = doc.get('title'),
-        tags = List<String>.from(doc.get('tags')),
+        isVirtual = doc.get('isVirtual'),
+        location = doc.get('location'),
         description = doc.get('description'),
         organizer = doc.get('organizerID'),
         startTime = doc.get('startTime').toDate(),
         endTime = doc.get('endTime').toDate(),
-        app = doc.get('appName'),
-        isOnline = doc.get('isOnline'),
-        url = doc.get('appURL'),
         attendeeIDs = List<String>.from(doc.get('attendees')),
-        maxAttendees = doc.get('maxAttendees');
+        maxAttendees = doc.get('maxAttendees'),
+        tags = List<String>.from(doc.get('tags'));
 
   final String eventID;
   final String title;
+  final bool isVirtual;
+  final String location;
   final List<String> tags;
   final String description;
   final String organizer;
   final DateTime startTime;
   final DateTime endTime;
-  final String app;
-  final String url;
   final List<String> attendeeIDs;
   final int maxAttendees;
-  final bool isOnline;
 }
 
 class EventCard extends StatelessWidget {
@@ -102,13 +100,19 @@ class EventCard extends StatelessWidget {
                 ),
                 Row(
                   children: [
+                    Icon(Icons.location_on, size: iconSize),
+                    SizedBox(width: 4),
+                    Text(
+                        event.isVirtual ? 'Online' : event.location,
+                        style: logisticsStyle),
+                  ],
+                ),
+                Row(
+                  children: [
                     Icon(Icons.people, size: iconSize),
                     SizedBox(width: 4),
                     Text(
-                        event.attendeeIDs.length.toString() +
-                            '/' +
-                            event.maxAttendees.toString() +
-                            ' attendees',
+                        event.attendeeIDs.length.toString() + (event.maxAttendees == null ? '' : '/' + event.maxAttendees.toString()),
                         style: logisticsStyle),
                   ],
                 ),
@@ -119,7 +123,10 @@ class EventCard extends StatelessWidget {
                   SizedBox(width: 4),
                   OrganizerChip(event.organizer)
                 ]),
-                Text(event.description, style: logisticsStyle),
+                Container(
+                    child: Text(event.description, style: logisticsStyle),
+                    width: MediaQuery.of(context).size.width * 0.6
+                ),
                 SizedBox(height: 8),
                 Text(event.tags.map((tag) => '#' + tag).join('  '),
                     style: secondaryStyle),
@@ -151,20 +158,26 @@ class EventRow extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
             child: Row(
                 children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Container(
-                        child: Text(event.title, style: TextStyle(fontSize: 16), softWrap: true),
-                        width: MediaQuery.of(context).size.width * 0.6
-                    ),
-                    Text(
-                        DateFormat('E').format(event.startTime) +
-                            '. ' +
-                            DateFormat('MMMMd').format(event.startTime) +
-                            ' at ' +
-                            DateFormat('jm').format(event.startTime),
-                        style: TextStyle(
-                            fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
-                  ]),
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                            child: Text(event.title, style: TextStyle(fontSize: 16), softWrap: true),
+                            width: MediaQuery.of(context).size.width * 0.6
+                        ),
+                        Text(
+                            DateFormat('E').format(event.startTime) +
+                                '. ' +
+                                DateFormat('MMMMd').format(event.startTime) +
+                                ' at ' +
+                                DateFormat('jm').format(event.startTime),
+                            style: TextStyle(fontSize: 12, color: Theme.of(context).accentColor)
+                        ),
+                        Text(event.isVirtual ? 'Virtual Event' : event.location,
+                            style: TextStyle(fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0))
+                        )
+                      ]
+                  ),
                   Spacer(),
                   Icon(Icons.people),
                   SizedBox(width: 2),
@@ -182,7 +195,7 @@ class EventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle subtitleStyle =
-    TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+    TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -213,8 +226,9 @@ class EventPage extends StatelessWidget {
                     ' at ' +
                     DateFormat('jm').format(event.startTime),
                 style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     color: Color.fromRGBO(0xEB, 0x8a, 0x90, 1.0))),
+            Text(event.isVirtual ? 'Virtual Event' : event.location, style: TextStyle(fontSize: 16)),
             SizedBox(height: 8),
             Row(children: [
               Expanded(child: RSVPButton(event.eventID)),
