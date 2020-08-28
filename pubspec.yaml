@@ -43,7 +43,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-
   uses-material-design: true
   assets:
     - assets/google_logo.png
@@ -53,3 +52,5 @@ flutter:
         - asset: fonts/Proxima-Nova-Regular.ttf
         - asset: fonts/Proxima-Nova-Bold.ttf
           weight: 700
+        - asset: fonts/Proxima-Nova-Italic.ttf
+          style: italic

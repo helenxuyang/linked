@@ -129,26 +129,31 @@ class EventRow extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
-    return Card(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
-          child: Row(
-              children: [
-                Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(event.title, style: TextStyle(fontSize: 16)),
-                      Text(DateFormat('E').format(event.dateTime) + '. ' + DateFormat('MMMMd').format(event.dateTime) + ' at ' + DateFormat('jm').format(event.dateTime),
-                          style: TextStyle(fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
-                    ]
-                ),
-                Spacer(),
-                Icon(Icons.people),
-                SizedBox(width: 2),
-                Text(event.attendeeIDs.length.toString())
-              ]
-          ),
-        )
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => EventPage(event)));
+      },
+      child: Card(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
+            child: Row(
+                children: [
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(event.title, style: TextStyle(fontSize: 16)),
+                        Text(DateFormat('E').format(event.dateTime) + '. ' + DateFormat('MMMMd').format(event.dateTime) + ' at ' + DateFormat('jm').format(event.dateTime),
+                            style: TextStyle(fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
+                      ]
+                  ),
+                  Spacer(),
+                  Icon(Icons.people),
+                  SizedBox(width: 2),
+                  Text(event.attendeeIDs.length.toString())
+                ]
+            ),
+          )
+      ),
     );
   }
 }

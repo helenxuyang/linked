@@ -24,7 +24,7 @@ class HomePage extends StatelessWidget {
               ]),
             ),
             Expanded(
-              child: ListView(children: [EventGroup('water')]),
+              child: ListView(children: [EventGroup('virtual')]),
             ),
             FloatingActionButton(
                 onPressed: () {
