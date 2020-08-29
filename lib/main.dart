@@ -24,21 +24,27 @@ class MyApp extends StatelessWidget {
               accentColor: Color.fromRGBO(0x2d, 0x82, 0xB7, 1.0),
               visualDensity: VisualDensity.adaptivePlatformDensity,
               textTheme: TextTheme(
-                  headline1: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 32,
-                      color: Colors.black
-                  ),
-                  headline2: TextStyle(
-                      fontSize: 22,
-                      color: Colors.black
-                  ),
-                headline3: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black
+                headline1: TextStyle(
+                    fontFamily: 'Proxima-Nova',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                    color: Colors.black),
+                headline2: TextStyle(
+                    fontFamily: 'Proxima-Nova',
+                    fontSize: 22, color: Colors.black
                 ),
-              )
-          ),
+                headline3: TextStyle(
+                    fontFamily: 'Proxima-Nova',
+                    fontSize: 18, color: Colors.black
+                ),
+                subtitle2: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                ),
+                bodyText1: TextStyle(
+                    fontSize: 12, color: Colors.black
+                ),
+              )),
           home: LoginPage(),
         ),
         create: (context) => CurrentUserInfo());

@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'main.dart';
 import 'Onboarding.dart';
 
-class CurrentUserInfo with ChangeNotifier{
+class CurrentUserInfo with ChangeNotifier {
   String id;
 
   void setID(String id) {
@@ -23,12 +23,12 @@ class CurrentUserInfo with ChangeNotifier{
 
     if (isSignedIn) {
       user = _auth.currentUser;
-
-    }
-    else {
+    } else {
       final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final AuthCredential cred = GoogleAuthProvider.credential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential cred = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
       user = (await _auth.signInWithCredential(cred)).user;
     }
     return user;
@@ -37,13 +37,18 @@ class CurrentUserInfo with ChangeNotifier{
   void signIn(BuildContext context) async {
     User user = await _handleSignIn();
     setID(user.uid);
-    FirebaseFirestore.instance.collection('users').doc(user.uid).get().then((snapshot) {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get()
+        .then((snapshot) {
       if (snapshot == null || !snapshot.exists) {
         //TODO: add to users database
-        Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingPage()));
-      }
-      else {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => OnboardingPage()));
+      } else {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => MainPage()));
       }
     });
   }
@@ -60,14 +65,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-            body: Column(
-                children: [
-                  SignInButton(),
-                  SignOutButton()
-                ]
-            )
-        )
-    );
+            body: Column(children: [SignInButton(), SignOutButton()])));
   }
 }
 
@@ -80,14 +78,11 @@ class SignInButton extends StatelessWidget {
         highlightColor: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/google_logo.png', width: 20),
-              SizedBox(width: 20),
-              Text('Sign in with Google', style: TextStyle(fontSize: 16))
-            ]
-          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Image.asset('assets/google_logo.png', width: 20),
+            SizedBox(width: 20),
+            Text('Sign in with Google', style: TextStyle(fontSize: 16))
+          ]),
         ),
         onPressed: () {
           userInfo.signIn(context);
@@ -109,5 +104,3 @@ class SignOutButton extends StatelessWidget {
     );
   }
 }
-
-
