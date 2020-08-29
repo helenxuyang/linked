@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 
 class Utils {
+  static List<String> allTags = [
+    'video games',
+    'board games',
+    'music',
+    'tv show',
+    'movies',
+    'study group',
+    'making friends'
+  ];
   static final TextStyle proximaNova = TextStyle(fontFamily: 'Proxima-Nova');
   static InputDecoration textFieldDecoration({String hint = ""}) {
     return InputDecoration(

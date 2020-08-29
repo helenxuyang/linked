@@ -218,15 +218,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget _buildEventPage(BuildContext context) {
     String inPersonTag = 'in-person';
     String virtualTag = 'virtual';
-    List<String> allTags = [
-      'video games',
-      'board games',
-      'music',
-      'tv show',
-      'movies',
-      'study group',
-      'making friends'
-    ];
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('What events are you interested in?',
@@ -269,7 +260,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       bigSpacer,
       Text('Activities', style: Theme.of(context).textTheme.headline3),
       Wrap(
-        children: allTags.map((tag) {
+        children: Utils.allTags.map((tag) {
           return ChoiceChip(
             label: Text(tag, style: TextStyle(fontSize: 14)),
             selected: tags.contains(tag),

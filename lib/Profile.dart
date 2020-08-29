@@ -47,17 +47,37 @@ class ProfilePage extends StatelessWidget {
               return Expanded(
                 child: Scrollbar(
                   child: ListView(children: [
-                    Text(doc.get('firstName') + ' ' + doc.get('lastName'),
-                        style: Theme.of(context).textTheme.headline1),
-                    Text(
-                        doc.get('major') +
-                            ' ' +
-                            doc.get('classYear').toString(),
-                        style: TextStyle(fontSize: 18)),
-                    Text(doc.get('status'),
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Theme.of(context).accentColor)),
+                    Row(
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.6,
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(doc.get('firstName') + ' ' + doc.get('lastName'),
+                                      style: Theme.of(context).textTheme.headline1),
+                                  Text(
+                                      doc.get('major') +
+                                          ' ' +
+                                          doc.get('classYear').toString(),
+                                      style: TextStyle(fontSize: 18)),
+                                  Text(doc.get('status'),
+                                      style: TextStyle(fontSize: 18, color: Theme.of(context).accentColor)),
+                                ]
+                            ),
+                          ),
+                          Spacer(),
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: ClipOval(
+                                  child: Image.network(
+                                    doc.get('photoURL'),
+                                    width: 75
+                                  )
+                              )
+                          ),
+                        ]
+                    ),
                     SizedBox(height: 16),
                     Text('Bio', style: subtitleStyle),
                     Text(doc.get('bio'), style: TextStyle(fontSize: 16)),
