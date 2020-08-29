@@ -23,7 +23,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   String f20Status;
   String instagramUser;
   String facebookUser;
-  String linkedInUser;
+  String linkedinUser;
   List<String> tags;
   List<String> classes;
 
@@ -35,6 +35,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
   TextEditingController lastNameCtrl = TextEditingController();
   TextEditingController majorCtrl = TextEditingController();
   TextEditingController bioCtrl = TextEditingController();
+  TextEditingController instagramCtrl = TextEditingController();
+  TextEditingController facebookCtrl = TextEditingController();
+  TextEditingController linkedinCtrl = TextEditingController();
   TextEditingController classCtrl = TextEditingController();
 
   @override
@@ -158,10 +161,56 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Row(children: [
         CircleAvatar(
           child: Image.asset('assets/instagram_logo.png', width: 20),
+        ),
+        Flexible(
+          child: TextField(
+            controller: instagramCtrl,
+            decoration: Utils.textFieldDecoration(hint: 'Enter username here'),
+            onSubmitted: (input) {
+              setState(() {
+                instagramUser = input;
+              });
+            },
+          ),
         )
-      ])
+      ]),
+      Row(
+        children: [
+          CircleAvatar(
+            child: Image.asset('assets/facebook_logo.png', width: 20),
+          ),
+          Flexible(
+            child: TextField(
+              controller: facebookCtrl,
+              decoration:
+                  Utils.textFieldDecoration(hint: 'Enter username here'),
+              onSubmitted: (input) {
+                setState(() {
+                  facebookUser = input;
+                });
+              },
+            ),
+          )
+        ],
+      ),
+      Row(children: [
+        CircleAvatar(
+          child: Image.asset('assets/linkedin_logo.png', width: 20),
+        ),
+        Flexible(
+          child: TextField(
+            controller: linkedinCtrl,
+            decoration: Utils.textFieldDecoration(hint: 'Enter username here'),
+            onSubmitted: (input) {
+              setState(() {
+                linkedinUser = input;
+              });
+            },
+          ),
+        )
+      ]),
     ]);
-  }
+  } // end of fun
 
   Widget _buildEventPage(BuildContext context) {
     String inPersonTag = 'in-person';
@@ -363,7 +412,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
             'classYear': gradYear,
             'classes': classes,
             'interestedTags': tags,
-            'events': []
+            'events': [],
+            'instagramUser': instagramCtrl.text,
+            'facebookUser': facebookCtrl.text,
+            'linkedinUser': linkedinCtrl.text
           });
           Navigator.push(
               context, MaterialPageRoute(builder: (context) => MainPage()));
