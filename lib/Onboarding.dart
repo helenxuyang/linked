@@ -42,6 +42,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   FocusNode _focusNodeBuildName;
   FocusNode _focusNodeBuildInfo;
+  FocusNode _focusNodeSocial;
 
   @override
   initState() {
@@ -51,11 +52,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     tags = [];
     classes = [];
     _focusNodeBuildName = FocusNode();
+    _focusNodeBuildInfo = FocusNode();
   }
 
   @override
   void dispose() {
     _focusNodeBuildName.dispose();
+    _focusNodeBuildInfo.dispose();
     super.dispose();
   }
 
@@ -165,20 +168,24 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _buildSocialMediaRow(
-      String platform, TextEditingController ctrl, Function callback) {
+      String platform, TextEditingController ctrl, Function callback,
+      // ignore: avoid_init_to_null
+      {socialFocusNode: null}) {
     double imageSize = 30;
     return Row(children: [
       Image.asset('assets/${platform.toLowerCase()}_logo.png',
           width: imageSize),
       SizedBox(width: 16),
       Flexible(
-        child: TextField(
-          controller: ctrl,
+        child: TextFormField(
           decoration:
               Utils.textFieldDecoration(hint: 'Enter $platform username'),
-          onSubmitted: (input) {
+          onChanged: (input) {
             callback(input);
           },
+          onFieldSubmitted: (value) => FocusScope.of(context).nextFocus(),
+          textInputAction: TextInputAction.next,
+          focusNode: socialFocusNode,
         ),
       )
     ]);
@@ -200,7 +207,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
           instagramCtrl,
           (input) => setState(() {
                 instagramUser = input;
-              })),
+              }),
+          socialFocusNode: _focusNodeSocial),
       smallSpacer,
       _buildSocialMediaRow(
           'Facebook',
@@ -443,9 +451,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
               'classes': classes,
               'interestedTags': tags,
               'events': [],
-              'instagramUser': instagramCtrl.text,
-              'facebookUser': facebookCtrl.text,
-              'linkedinUser': linkedinCtrl.text
+              'instagramUser': instagramUser,
+              'facebookUser': facebookUser,
+              'linkedinUser': linkedinUser
             });
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MainPage()));
