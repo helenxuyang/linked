@@ -55,6 +55,7 @@ flutter:
     - assets/instagram_logo.png
     - assets/google_meet_logo.png
     - assets/linkedin_logo.png
+    - assets/linked_logo.png
   fonts:
     - family: Proxima-Nova
       fonts:
