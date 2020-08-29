@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'Login.dart';
 import 'Event.dart';
 
@@ -71,8 +72,8 @@ class ProfilePage extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: ClipOval(
                                   child: Image.network(
-                                    doc.get('photoURL'),
-                                    width: 75
+                                      doc.get('photoURL'),
+                                      width: 75
                                   )
                               )
                           ),
@@ -125,8 +126,79 @@ class ProfilePage extends StatelessWidget {
                               child: Row(children: List<EventCard>.from(
                                   snapshot.data.documents.map((doc) {
                                     return EventCard(Event.fromDoc(doc));
-                                  }))));
-                        })
+                                  }))
+                              )
+                          );
+                        }),
+                    SizedBox(height: 24),
+                    StreamBuilder<Object>(
+                        stream: FirebaseFirestore.instance.collection('users').doc(userID).snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Container();
+                          }
+                          DocumentSnapshot doc = snapshot.data;
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (doc.get('linkedinUser') != null && !doc.get('linkedinUser').isEmpty)
+                                  MaterialButton(
+                                    shape: CircleBorder(side: BorderSide(width: 2, color: Colors.transparent)),
+                                    child: Image.asset('assets/linkedin_logo.png', width: 30),
+                                    onPressed: () async {
+                                      String url = 'https://linkedin.com/in/' + doc.get('linkedinUser');
+                                      if (await canLaunch(url)) {
+                                        await launch(
+                                          url,
+                                          forceSafariVC: false,
+                                          forceWebView: false,
+                                          headers: <String, String>{'my_header_key': 'my_header_value'},
+                                        );
+                                      } else {
+                                        throw 'Could not launch $url';
+                                      }
+                                    },
+                                  ),
+                                if (doc.get('facebookUser') != null && !doc.get('facebookUser').isEmpty)
+                                  MaterialButton(
+                                    shape: CircleBorder(side: BorderSide(width: 2, color: Colors.transparent)),
+                                    child: Image.asset('assets/facebook_logo.png', width: 30),
+                                    onPressed: () async {
+                                      String url = 'https://facebook.com/' + doc.get('facebookUser');
+                                      if (await canLaunch(url)) {
+                                        await launch(
+                                          url,
+                                          forceSafariVC: false,
+                                          forceWebView: false,
+                                          headers: <String, String>{'my_header_key': 'my_header_value'},
+                                        );
+                                      } else {
+                                        throw 'Could not launch $url';
+                                      }
+                                    },
+                                  ),
+                                if (doc.get('instagramUser') != null && !doc.get('instagramUser').isEmpty)
+                                  MaterialButton(
+                                    shape: CircleBorder(side: BorderSide(width: 2, color: Colors.transparent)),
+                                    child: Image.asset('assets/instagram_logo.png', width: 30),
+                                    onPressed: () async {
+                                      String url = 'https://instagram.com/' + doc.get('instagramUser');
+                                      if (await canLaunch(url)) {
+                                        await launch(
+                                          url,
+                                          forceSafariVC: false,
+                                          forceWebView: false,
+                                          headers: <String, String>{'my_header_key': 'my_header_value'},
+                                        );
+                                      } else {
+                                        throw 'Could not launch $url';
+                                      }
+                                    },
+                                  ),
+                              ]
+                          );
+                        }
+                    )
                   ]),
                 ),
               );

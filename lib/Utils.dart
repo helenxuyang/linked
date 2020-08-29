@@ -4,6 +4,7 @@ class Utils {
   static List<String> allTags = [
     'video games',
     'board games',
+    'card games',
     'music',
     'tv shows',
     'movies',
