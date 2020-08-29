@@ -65,7 +65,9 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-            body: Column(children: [SignInButton(), SignOutButton()])));
+            body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [SignInButton(), SignOutButton()])));
   }
 }
 
