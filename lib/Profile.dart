@@ -118,7 +118,7 @@ class ProfilePage extends StatelessWidget {
                           }
                           List<DocumentSnapshot> docs = snapshot.data.docs;
                           if (docs.isEmpty) {
-                            return Text('No events yet!');
+                            return Text('No events yet');
                           }
                           return SingleChildScrollView(
                               scrollDirection: Axis.horizontal,

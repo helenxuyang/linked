@@ -31,6 +31,8 @@ dependencies:
   url_launcher: ^5.5.1
   share: ^0.6.5
   package_info: ^0.4.0+16
+  add_2_calendar: ^1.4.0
+  flutter_native_timezone: ^1.0.4
 
 
   # The following adds the Cupertino Icons font to your application.

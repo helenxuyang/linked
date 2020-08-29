@@ -84,8 +84,7 @@ class _SchedulePageState extends State<SchedulePage> {
               }
               List<DocumentSnapshot> eventDocs = snapshot.data.docs;
               if (eventDocs.isEmpty) {
-                return Text(
-                    'No events yet 😥 Sign up for one to join the fun!');
+                return EventUtils.noEventsMessage;
               }
               Map<DateTime, List<DocumentSnapshot>> daysAndEvents = {};
               for (DocumentSnapshot d in eventDocs) {

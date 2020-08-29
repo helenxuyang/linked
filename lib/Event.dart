@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
+import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import 'dart:developer';
 
 class Event {
@@ -67,8 +70,6 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     TextStyle titleStyle = TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
     TextStyle logisticsStyle = TextStyle(fontSize: 16);
-    TextStyle subtitleStyle =
-        TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
     TextStyle secondaryStyle = TextStyle(
         fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey);
 
@@ -523,21 +524,58 @@ class _RSVPButtonState extends State<RSVPButton> {
                   child: Text('RSVP', style: TextStyle(color: Colors.white)),
                   onPressed: disabled
                       ? null
-                      : () {
-                          //TODO: create email screen
+                      : () async {
                           disable();
                           addSignUp(userID, widget.eventID);
+                          FirebaseFirestore.instance
+                              .collection('events')
+                              .doc(widget.eventID)
+                              .get()
+                              .then((doc) {
+                            EventUtils.addToCalendar(
+                                doc.get('title'),
+                                doc.get('location'),
+                                doc.get('description'),
+                                doc.get('startTime').toDate(),
+                                doc.get('endTime').toDate());
+                          });
                         });
         });
   }
 }
 
-class EventMethods {
+class EventUtils {
+  static Widget noEventsMessage = SizedBox(
+      width: double.infinity,
+      child: Column(children: [
+        Text('No events here 😥'),
+        Text('Create or sign up for one to join in the fun!')
+      ]));
+
   static Future<bool> retrieveSignedUp(String userID, String eventID) {
     DocumentReference userDoc =
         FirebaseFirestore.instance.collection('users').doc(userID);
     return userDoc
         .get()
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
+  }
+
+  static addToCalendar(String title, String location, String description,
+      DateTime startTime, DateTime endTime) async {
+    cal.Event calEvent = cal.Event(
+      title: title,
+      location: location,
+      description: description,
+      startDate: startTime,
+      endDate: endTime,
+    );
+    String timezone;
+    try {
+      timezone = await FlutterNativeTimezone.getLocalTimezone();
+      calEvent.timeZone = timezone;
+    } on PlatformException {
+      timezone = null;
+    }
+    cal.Add2Calendar.addEvent2Cal(calEvent);
   }
 }
