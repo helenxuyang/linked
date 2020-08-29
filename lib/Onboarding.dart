@@ -35,11 +35,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget smallSpacer = SizedBox(height: 8);
   Widget bigSpacer = SizedBox(height: 24);
 
-  TextEditingController instagramCtrl = TextEditingController();
-  TextEditingController facebookCtrl = TextEditingController();
-  TextEditingController linkedinCtrl = TextEditingController();
-  TextEditingController classCtrl = TextEditingController();
-
   FocusNode _focusNodeBuildName;
   FocusNode _focusNodeSocial;
 
@@ -112,7 +107,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           smallSpacer,
           TextFormField(
             decoration: Utils.textFieldDecoration(hint: "Information Science"),
-            textInputAction: TextInputAction.next,
+            // textInputAction: TextInputAction.next,
             onChanged: (value) {
               setState(() {
                 major = value;
@@ -165,15 +160,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
               });
             },
           ),
-          Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-          )
         ]);
   }
 
-  Widget _buildSocialMediaRow(
-      String platform, TextEditingController ctrl, Function callback,
+  Widget _buildSocialMediaRow(String platform, Function callback,
       // ignore: avoid_init_to_null
       {socialFocusNode: null}) {
     double imageSize = 30;
@@ -209,7 +199,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
       bigSpacer,
       _buildSocialMediaRow(
           'Instagram',
-          instagramCtrl,
           (input) => setState(() {
                 instagramUser = input;
               }),
@@ -217,14 +206,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
       smallSpacer,
       _buildSocialMediaRow(
           'Facebook',
-          facebookCtrl,
           (input) => setState(() {
                 facebookUser = input;
               })),
       smallSpacer,
       _buildSocialMediaRow(
           'LinkedIn',
-          linkedinCtrl,
           (input) => setState(() {
                 linkedinUser = input;
               })),
@@ -305,13 +292,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
       bigSpacer,
       Text('Enter Classes', style: Theme.of(context).textTheme.headline3),
       smallSpacer,
-      TextField(
-        controller: classCtrl,
+      TextFormField(
         decoration: Utils.textFieldDecoration(hint: 'Add a class'),
-        onSubmitted: (input) {
+        onFieldSubmitted: (input) {
           setState(() {
             classes.add(input);
-            classCtrl.clear();
           });
         },
       ),
@@ -376,9 +361,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
         child: Text('Skip', style: TextStyle(fontSize: 16)),
         onPressed: () {
           setState(() {
-            facebookCtrl.clear();
-            instagramCtrl.clear();
-            linkedinCtrl.clear();
+            facebookUser = "";
+            instagramUser = "";
+            linkedinUser = "";
             pageIndex++;
           });
         });
