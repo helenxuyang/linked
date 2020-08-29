@@ -6,7 +6,6 @@ import 'Login.dart';
 import 'Profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
-import 'package:package_info/package_info.dart';
 import 'dart:developer';
 
 class Event {

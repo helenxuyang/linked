@@ -20,6 +20,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     'Living off-campus in Ithaca',
     'Living outside of Ithaca'
   ];
+  String firstName;
+  String lastName;
   String f20Status;
   String instagramUser;
   String facebookUser;
@@ -40,6 +42,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   TextEditingController linkedinCtrl = TextEditingController();
   TextEditingController classCtrl = TextEditingController();
 
+  FocusNode _focusNodeBuildName;
+
   @override
   initState() {
     super.initState();
@@ -47,6 +51,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     f20Status = statuses[0];
     tags = [];
     classes = [];
+    _focusNodeBuildName = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNodeBuildName.dispose();
+    super.dispose();
   }
 
   Widget _buildNamePage(BuildContext context) {
@@ -58,27 +69,30 @@ class _OnboardingPageState extends State<OnboardingPage> {
       bigSpacer,
       Text('First name', style: Theme.of(context).textTheme.headline3),
       smallSpacer,
-      TextField(
+      TextFormField(
         decoration: Utils.textFieldDecoration(),
-        controller: firstNameCtrl,
-        onSubmitted: (value) {
+        focusNode: _focusNodeBuildName,
+        textInputAction: TextInputAction.next,
+        onChanged: (value) {
           setState(() {
-            firstNameCtrl.text = value;
+            firstName = value;
           });
         },
+        onFieldSubmitted: (value) => FocusScope.of(context).nextFocus(),
       ),
       bigSpacer,
       Text('Last name', style: Theme.of(context).textTheme.headline3),
-      smallSpacer,
-      TextField(
+      TextFormField(
         decoration: Utils.textFieldDecoration(),
-        controller: lastNameCtrl,
-        onSubmitted: (value) {
+        textInputAction: TextInputAction.next,
+        onChanged: (value) {
           setState(() {
-            lastNameCtrl.text = value;
+            lastName = value;
           });
         },
+        onFieldSubmitted: (value) => FocusScope.of(context).nextFocus(),
       ),
+      smallSpacer,
     ]);
   }
 
@@ -107,7 +121,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         value: gradYear,
         items: years
             .map((year) =>
-            DropdownMenuItem(child: Text(year.toString()), value: year))
+                DropdownMenuItem(child: Text(year.toString()), value: year))
             .toList(),
         onChanged: (selection) {
           setState(() {
@@ -122,9 +136,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
         value: f20Status,
         items: statuses
             .map((str) => DropdownMenuItem(
-          child: Text(str),
-          value: str,
-        ))
+                  child: Text(str),
+                  value: str,
+                ))
             .toList(),
         onChanged: (selection) {
           setState(() {
@@ -147,23 +161,24 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ]);
   }
 
-  Widget _buildSocialMediaRow(String platform, TextEditingController ctrl, Function callback) {
+  Widget _buildSocialMediaRow(
+      String platform, TextEditingController ctrl, Function callback) {
     double imageSize = 30;
-    return Row(
-        children: [
-          Image.asset('assets/${platform.toLowerCase()}_logo.png', width: imageSize),
-          SizedBox(width: 16),
-          Flexible(
-            child: TextField(
-              controller: ctrl,
-              decoration: Utils.textFieldDecoration(hint: 'Enter $platform username'),
-              onSubmitted: (input) {
-                callback(input);
-              },
-            ),
-          )
-        ]
-    );
+    return Row(children: [
+      Image.asset('assets/${platform.toLowerCase()}_logo.png',
+          width: imageSize),
+      SizedBox(width: 16),
+      Flexible(
+        child: TextField(
+          controller: ctrl,
+          decoration:
+              Utils.textFieldDecoration(hint: 'Enter $platform username'),
+          onSubmitted: (input) {
+            callback(input);
+          },
+        ),
+      )
+    ]);
   }
 
   Widget _buildSocialMediaPage(BuildContext context) {
@@ -177,11 +192,26 @@ class _OnboardingPageState extends State<OnboardingPage> {
         style: Theme.of(context).textTheme.headline3,
       ),
       bigSpacer,
-      _buildSocialMediaRow('Instagram', instagramCtrl, (input) => setState(() { instagramUser = input; })),
+      _buildSocialMediaRow(
+          'Instagram',
+          instagramCtrl,
+          (input) => setState(() {
+                instagramUser = input;
+              })),
       smallSpacer,
-      _buildSocialMediaRow('Facebook', facebookCtrl, (input) => setState(() { facebookUser = input; })),
+      _buildSocialMediaRow(
+          'Facebook',
+          facebookCtrl,
+          (input) => setState(() {
+                facebookUser = input;
+              })),
       smallSpacer,
-      _buildSocialMediaRow('LinkedIn', linkedinCtrl, (input) => setState(() { linkedinUser = input; })),
+      _buildSocialMediaRow(
+          'LinkedIn',
+          linkedinCtrl,
+          (input) => setState(() {
+                linkedinUser = input;
+              })),
     ]);
   } // end of fun
 
@@ -210,7 +240,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
       CheckboxListTile(
         controlAffinity: ListTileControlAffinity.leading,
         contentPadding: EdgeInsets.all(0),
-        title: Text('In-person (with social distancing)', style: TextStyle(fontSize: 16)),
+        title: Text('In-person (with social distancing)',
+            style: TextStyle(fontSize: 16)),
         value: tags.contains(inPersonTag),
         onChanged: (value) {
           setState(() {
@@ -265,8 +296,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('We\'ll show you study groups for the classes you\'re taking!',
           style: Theme.of(context).textTheme.subtitle2),
       bigSpacer,
-      Text('Enter Classes',
-          style: Theme.of(context).textTheme.headline3),
+      Text('Enter Classes', style: Theme.of(context).textTheme.headline3),
       smallSpacer,
       TextField(
         controller: classCtrl,
@@ -295,7 +325,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
         }).toList(),
         spacing: 4,
       )
-
     ]);
   }
 
@@ -310,11 +339,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 width: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: currentIndex == index ? Colors.black : Color.fromRGBO(0xC4, 0xC4, 0xC4, 1.0),
+                  color: currentIndex == index
+                      ? Colors.black
+                      : Color.fromRGBO(0xC4, 0xC4, 0xC4, 1.0),
                 )),
           );
-        })
-    );
+        }));
   }
 
   @override
@@ -333,8 +363,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           setState(() {
             pageIndex--;
           });
-        }
-    );
+        });
 
     Widget skipButton = FlatButton(
         child: Text('Skip', style: TextStyle(fontSize: 16)),
@@ -345,8 +374,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             linkedinCtrl.clear();
             pageIndex++;
           });
-        }
-    );
+        });
 
     Widget nextButton = Builder(builder: (context) {
       return SizedBox(
@@ -359,25 +387,29 @@ class _OnboardingPageState extends State<OnboardingPage> {
             bool valid = true;
             switch (pageIndex) {
               case 0:
-                if (firstNameCtrl.text == null ||
-                    firstNameCtrl.text.isEmpty ||
-                    lastNameCtrl.text == null ||
-                    lastNameCtrl.text.isEmpty) {
+                String snackBarPrompt = "";
+                if (firstName == null || firstName.isEmpty) {
+                  snackBarPrompt += "Please enter your first name!\n";
+                }
+                if (lastName == null || lastName.isEmpty) {
+                  snackBarPrompt += "Please enter your last name!";
+                }
+                if (snackBarPrompt.isNotEmpty) {
                   valid = false;
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text('Please enter your first and last name!')));
+                  Scaffold.of(context)
+                      .showSnackBar(SnackBar(content: Text(snackBarPrompt)));
                 }
                 break;
               case 1:
                 if (majorCtrl.text == null || majorCtrl.text.isEmpty) {
                   valid = false;
                   Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text('Please enter your major, feel free to put \'Undecided\' if you\'re unsure!')));
-                }
-                else if (bioCtrl.text == null || bioCtrl.text.isEmpty) {
+                      content: Text(
+                          'Please enter your major, feel free to put \'Undecided\' if you\'re unsure!')));
+                } else if (bioCtrl.text == null || bioCtrl.text.isEmpty) {
                   valid = false;
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text('Please enter a short bio!')));
+                  Scaffold.of(context).showSnackBar(
+                      SnackBar(content: Text('Please enter a short bio!')));
                 }
                 break;
               default:
@@ -393,70 +425,64 @@ class _OnboardingPageState extends State<OnboardingPage> {
       );
     });
 
-    Widget finishButton =
-    SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: FlatButton(
-        child: Text('Finish', style: TextStyle(fontSize: 16)),
-        color: Theme.of(context).accentColor,
-        textColor: Colors.white,
-        onPressed: () {
-          String userID =
-              Provider.of<CurrentUserInfo>(context, listen: false).id;
-          User user = FirebaseAuth.instance.currentUser;
-          FirebaseFirestore.instance.collection('users').doc(userID).set({
-            'firstName': firstNameCtrl.text,
-            'lastName': lastNameCtrl.text,
-            'bio': bioCtrl.text,
-            'status': f20Status,
-            'photoURL': user.photoURL,
-            'major': majorCtrl.text,
-            'classYear': gradYear,
-            'classes': classes,
-            'interestedTags': tags,
-            'events': [],
-            'instagramUser': instagramCtrl.text,
-            'facebookUser': facebookCtrl.text,
-            'linkedinUser': linkedinCtrl.text
-          });
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MainPage()));
-        },
-      )
-    );
+    Widget finishButton = SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: FlatButton(
+          child: Text('Finish', style: TextStyle(fontSize: 16)),
+          color: Theme.of(context).accentColor,
+          textColor: Colors.white,
+          onPressed: () {
+            String userID =
+                Provider.of<CurrentUserInfo>(context, listen: false).id;
+            User user = FirebaseAuth.instance.currentUser;
+            FirebaseFirestore.instance.collection('users').doc(userID).set({
+              'firstName': firstNameCtrl.text,
+              'lastName': lastNameCtrl.text,
+              'bio': bioCtrl.text,
+              'status': f20Status,
+              'photoURL': user.photoURL,
+              'major': majorCtrl.text,
+              'classYear': gradYear,
+              'classes': classes,
+              'interestedTags': tags,
+              'events': [],
+              'instagramUser': instagramCtrl.text,
+              'facebookUser': facebookCtrl.text,
+              'linkedinUser': linkedinCtrl.text
+            });
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MainPage()));
+          },
+        ));
 
     return Scaffold(
         resizeToAvoidBottomPadding: false,
         body: SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (pageIndex > 0)
-                  Row(
-                      children: [
-                        backButton,
-                        if (pageIndex == 2)
-                          Spacer(),
-                        if (pageIndex == 2)
-                          skipButton
-                      ]
-                  ),
-                Padding(
-                  padding: pageIndex == 0 ? const EdgeInsets.all(32) : const EdgeInsets.only(left: 32, right: 32),
-                  child: pages[pageIndex],
-                ),
-                Spacer(),
-                _buildProgress(pageIndex, pages.length),
-                SizedBox(height: 24),
-                SizedBox(
-                    height: 48,
-                    width: double.infinity,
-                    child: pageIndex == pages.length - 1 ? finishButton : nextButton
-                )
-              ],
-            )
-        )
-    );
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (pageIndex > 0)
+              Row(children: [
+                backButton,
+                if (pageIndex == 2) Spacer(),
+                if (pageIndex == 2) skipButton
+              ]),
+            Padding(
+              padding: pageIndex == 0
+                  ? const EdgeInsets.all(32)
+                  : const EdgeInsets.only(left: 32, right: 32),
+              child: pages[pageIndex],
+            ),
+            Spacer(),
+            _buildProgress(pageIndex, pages.length),
+            SizedBox(height: 24),
+            SizedBox(
+                height: 48,
+                width: double.infinity,
+                child:
+                    pageIndex == pages.length - 1 ? finishButton : nextButton)
+          ],
+        )));
   }
 }
