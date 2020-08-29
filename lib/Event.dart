@@ -7,6 +7,7 @@ import 'Profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
 import 'package:package_info/package_info.dart';
+import 'dart:developer';
 
 class Event {
   static final List<String> appOptions = ['Virtual', 'In Person'];
@@ -145,8 +146,7 @@ class EventCard extends StatelessWidget {
                   ? JoinButton(event.location)
                   : RSVPButton(event.eventID),
               SizedBox(width: 16),
-              ShareButton(event.title, event.description, event.isVirtual,
-                  event.location)
+              ShareButton(event)
             ])
           ]),
         ),
@@ -243,9 +243,7 @@ class EventPage extends StatelessWidget {
             Row(children: [
               Expanded(child: RSVPButton(event.eventID)),
               SizedBox(width: 16),
-              Expanded(
-                  child: ShareButton(event.title, event.description,
-                      event.isVirtual, event.location))
+              Expanded(child: ShareButton(event))
             ]),
             SizedBox(height: 8),
             Text('Description', style: subtitleStyle),
@@ -353,11 +351,8 @@ class AttendeeChips extends StatelessWidget {
 }
 
 class ShareButton extends StatelessWidget {
-  ShareButton(this.eventTitle, this.eventDescription, this.isOnline, this.url);
-  final String eventTitle;
-  final String eventDescription;
-  final bool isOnline;
-  final String url;
+  ShareButton(this.event);
+  final Event event;
   @override
   Widget build(BuildContext context) {
     return OutlineButton(
@@ -365,10 +360,37 @@ class ShareButton extends StatelessWidget {
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         child: Text('SHARE', style: TextStyle(color: Colors.blue)),
-        onPressed: () {
-          String mediumLine = isOnline ? "URL: $url" : "Location: $url";
-          Share.share(
-              "Event: $eventTitle \nDescription: $eventDescription \n$mediumLine");
+        onPressed: () async {
+          log("Share button pressed");
+          String organizerId = event.organizer;
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(organizerId)
+              .get()
+              .then<void>((snapshot) async {
+            log("organizer doc fetched");
+            String mediumLine = event.isVirtual
+                ? "URL: ${event.location}\n"
+                : "Location: ${event.location}\n";
+            String startDateStr =
+                DateFormat('EEE M/d/y ').format(event.startTime) +
+                    DateFormat('jm').format(event.startTime);
+            String endDateStr = event.startTime.day == event.endTime.day
+                ? DateFormat('jm').format(event.endTime)
+                : DateFormat('M/d/y ').format(event.endTime) +
+                    DateFormat('jm').format(event.endTime);
+            String dateTimeLine =
+                "Date & Time: " + startDateStr + " to " + endDateStr + "\n";
+            //"Date & Time: ${event.startTime} to ${event.endTime}\n"
+            String shareString = "Event: ${event.title} \n" +
+                "Description: ${event.description} \n" +
+                "$mediumLine" +
+                "$dateTimeLine";
+            String organizer =
+                snapshot.get('firstName') + ' ' + snapshot.get('lastName');
+            shareString += "Organizer: $organizer";
+            await Share.share(shareString);
+          });
         });
   }
 }
