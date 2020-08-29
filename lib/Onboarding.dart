@@ -151,12 +151,15 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Text('Introduce yourself!', style: Theme.of(context).textTheme.headline3),
       smallSpacer,
       TextFormField(
-        decoration: Utils.textFieldDecoration(),
+        decoration:
+            Utils.textFieldDecoration(hint: "Tell me a bit about yourself!"),
         onChanged: (value) {
           setState(() {
             bio = value;
           });
         },
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) => FocusScope.of(context).nextFocus(),
       ),
     ]);
   }
@@ -392,17 +395,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 }
                 break;
               case 1:
-                String scaffoldText = "";
+                String snackBarPrompt = "";
                 if (major == null || major.isEmpty) {
-                  scaffoldText +=
+                  snackBarPrompt +=
                       'Please enter your major, feel free to put \'Undecided\' if you\'re unsure!\n';
                 } else if (bio == null || bio.isEmpty) {
-                  scaffoldText += 'Please enter a short bio!';
+                  snackBarPrompt += 'Please enter a short bio!';
                 }
-                if (scaffoldText.isNotEmpty) {
+                if (snackBarPrompt.isNotEmpty) {
                   valid = false;
                   Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text(scaffoldText)));
+                      .showSnackBar(SnackBar(content: Text(snackBarPrompt)));
                 }
                 break;
               default:
