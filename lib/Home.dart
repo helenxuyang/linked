@@ -31,13 +31,13 @@ class HomePage extends StatelessWidget {
                   )
                 ]),
               ),
-              EventGroup('Happening Now',
+              EventGroup(
+                  'Happening Now',
                   FirebaseFirestore.instance
-                  .collection('events')
-                  .where('startTime', isLessThan: Timestamp.now())
-                  .orderBy('startTime')
-                  .snapshots()
-              ),
+                      .collection('events')
+                      .where('startTime', isLessThan: Timestamp.now())
+                      .orderBy('startTime')
+                      .snapshots()),
               SizedBox(height: 24),
               StreamBuilder(
                   stream: FirebaseFirestore.instance
@@ -49,18 +49,17 @@ class HomePage extends StatelessWidget {
                       return Container();
                     }
                     List<String> tags =
-                    List<String>.from(snapshot.data.get('interestedTags'));
+                        List<String>.from(snapshot.data.get('interestedTags'));
                     return Column(
-                      //TODO: use tags from backend
-                        children:
-                        tags.map((tag) =>
-                            EventGroup('Tag: $tag',
-                            FirebaseFirestore.instance
-                                .collection('events')
-                                .where('tags', arrayContains: tag)
-                                .snapshots()
-                        )).toList()
-                    );
+                        //TODO: use tags from backend
+                        children: tags
+                            .map((tag) => EventGroup(
+                                'Tag: $tag',
+                                FirebaseFirestore.instance
+                                    .collection('events')
+                                    .where('tags', arrayContains: tag)
+                                    .snapshots()))
+                            .toList());
                   })
             ]),
           ),
@@ -97,8 +96,8 @@ class EventGroup extends StatelessWidget {
           return Container();
         }
         List<DocumentSnapshot> docs =
-        List<DocumentSnapshot>.from(snapshot.data.documents).where((doc) {
-          return doc.get('endTime').toDate().isAfter(DateTime.now());
+            List<DocumentSnapshot>.from(snapshot.data.documents).where((doc) {
+          return doc.get('endTime').seconds > Timestamp.now().seconds;
         }).toList();
         docs = docs.sublist(0, min(3, docs.length));
         if (docs.isEmpty) {
@@ -109,23 +108,21 @@ class EventGroup extends StatelessWidget {
             Text(title, style: TextStyle(fontSize: 22)),
             Spacer(),
             FlatButton(
-                child: Text(
-                    'view more', style: TextStyle(fontSize: 14, color: Theme
-                    .of(context)
-                    .accentColor)),
+                child: Text('view more',
+                    style: TextStyle(
+                        fontSize: 14, color: Theme.of(context).accentColor)),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => EventGroupPage(title, stream)));
-                }
-            )
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => EventGroupPage(title, stream)));
+                })
           ]),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Row(
-                children: List<EventCard>.from(docs.map((doc) {
-                  return EventCard(Event.fromDoc(doc));
-                }))
-            ),
+            child: Row(children: List<EventCard>.from(docs.map((doc) {
+              return EventCard(Event.fromDoc(doc));
+            }))),
           )
         ]);
       },
@@ -152,7 +149,8 @@ class EventGroupPage extends StatelessWidget {
               return Container();
             }
             List<DocumentSnapshot> docs =
-            List<DocumentSnapshot>.from(snapshot.data.documents).where((doc) {
+                List<DocumentSnapshot>.from(snapshot.data.documents)
+                    .where((doc) {
               return doc.get('endTime').toDate().isAfter(DateTime.now());
             }).toList();
             if (docs.isEmpty) {
@@ -161,13 +159,14 @@ class EventGroupPage extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FlatButton(
                       padding: EdgeInsets.only(left: 0),
                       highlightColor: Colors.transparent,
                       splashColor: Colors.transparent,
-                      child: Align(alignment: Alignment.centerLeft, child: Text('Back')),
+                      child: Align(
+                          alignment: Alignment.centerLeft, child: Text('Back')),
                       onPressed: () => Navigator.pop(context),
                     ),
                     Text(title, style: Theme.of(context).textTheme.headline1),
@@ -176,13 +175,11 @@ class EventGroupPage extends StatelessWidget {
                       child: Scrollbar(
                         child: ListView(
                             children: List<EventCard>.from(docs.map((doc) {
-                              return EventCard(Event.fromDoc(doc));
-                            }))
-                        ),
+                          return EventCard(Event.fromDoc(doc));
+                        }))),
                       ),
                     )
-                  ]
-              ),
+                  ]),
             );
           },
         ),
