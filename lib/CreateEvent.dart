@@ -48,102 +48,104 @@ class _CreateEventPageState extends State<CreateEventPage> {
         resizeToAvoidBottomPadding: false,
         body: SafeArea(
             child: Column(
-          children: [
-            Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        }),
-                    Text("New Event",
-                        style: Theme.of(context).textTheme.headline1),
-                    SizedBox(height: 30),
-                    Text("Event Name",
-                        style: Theme.of(context).textTheme.headline3),
-                    TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          _title = value;
-                        });
-                      },
-                    ),
-                    SizedBox(height: 18),
-                    Text("Event Description",
-                        style: Theme.of(context).textTheme.headline3),
-                    Text("Max 20 characters"),
-                    TextField(onChanged: (value) {
-                      setState(() {
-                        _description = value;
-                      });
-                    }),
-                    Text('Medium'),
-                    DropdownButton<String>(
-                        items: Event.appOptions
-                            .map((medium) => DropdownMenuItem(
-                                child: Text(medium), value: medium))
-                            .toList(),
-                        value: _appName,
-                        icon: Icon(Icons.arrow_downward),
-                        onChanged: (newValue) {
+              children: [
+                Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.close),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            }),
+                        Text("New Event",
+                            style: Theme.of(context).textTheme.headline1),
+                        SizedBox(height: 30),
+                        Text("Event Name",
+                            style: Theme.of(context).textTheme.headline3),
+                        TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              _title = value;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 18),
+                        Text("Event Description",
+                            style: Theme.of(context).textTheme.headline3),
+                        Text("Max 20 characters"),
+                        TextField(onChanged: (value) {
                           setState(() {
-                            _appName = newValue;
-                            if (newValue == "In Person") {
-                              _isOnline = false;
-                            } else {
-                              _isOnline = true;
-                            }
+                            _description = value;
                           });
                         }),
-                    SizedBox(height: 18),
-                    Text('Date and Time',
-                        style: Theme.of(context).textTheme.headline3),
-                    DateTimeSelections(setDateAndTime),
-                    SizedBox(height: 18),
-                    Text('Tags', style: Theme.of(context).textTheme.headline3),
-                    TextField(
-                      controller: tagCtrl,
-                      onSubmitted: (input) {
-                        _tags.add(input);
-                        tagCtrl.clear();
-                      },
-                    ),
-                    Wrap(
-                        children: _tags
-                            .map((tag) => InputChip(label: Text(tag)))
-                            .toList(),
-                        spacing: 8)
-                  ],
-                )),
-            Spacer(),
-            SizedBox(
-              height: 48,
-              width: double.infinity,
-              child: FlatButton(
-                  color: Theme.of(context).accentColor,
-                  textColor: Colors.white,
-                  child: Text("Create Event", style: TextStyle(fontSize: 18)),
-                  onPressed: () {
-                    FirebaseFirestore.instance.collection('events').add({
-                      'appName': _appName,
-                      'appURL': _appURL,
-                      'attendees': [_organizerID],
-                      'description': _description,
-                      'endTime': Timestamp.fromDate(_endTime),
-                      'isOnline': _isOnline,
-                      'maxAttendees': _maxAttendees,
-                      'organizerID': _organizerID,
-                      'startTime': Timestamp.fromDate(_startTime),
-                      'tags': _tags,
-                      'title': _title,
-                    });
-                  }),
-            ),
-          ],
-        )));
+                        Text('Medium'),
+                        DropdownButton<String>(
+                            items: Event.appOptions
+                                .map((medium) => DropdownMenuItem(
+                                child: Text(medium), value: medium))
+                                .toList(),
+                            value: _appName,
+                            icon: Icon(Icons.arrow_downward),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _appName = newValue;
+                                if (newValue == "In Person") {
+                                  _isOnline = false;
+                                } else {
+                                  _isOnline = true;
+                                }
+                              });
+                            }),
+                        SizedBox(height: 18),
+                        Text('Date and Time',
+                            style: Theme.of(context).textTheme.headline3),
+                        DateTimeSelections(setDateAndTime),
+                        SizedBox(height: 18),
+                        Text('Tags', style: Theme.of(context).textTheme.headline3),
+                        TextField(
+                          controller: tagCtrl,
+                          onSubmitted: (input) {
+                            _tags.add(input);
+                            tagCtrl.clear();
+                          },
+                        ),
+                        Wrap(
+                            children: _tags
+                                .map((tag) => InputChip(label: Text(tag)))
+                                .toList(),
+                            spacing: 8)
+                      ],
+                    )),
+                Spacer(),
+                SizedBox(
+                  height: 48,
+                  width: double.infinity,
+                  child: FlatButton(
+                      color: Theme.of(context).accentColor,
+                      textColor: Colors.white,
+                      child: Text("Create Event", style: TextStyle(fontSize: 18)),
+                      onPressed: () {
+                        FirebaseFirestore.instance.collection('events').add({
+                          'appName': _appName,
+                          'appURL': _appURL,
+                          'attendees': [_organizerID],
+                          'description': _description,
+                          'endTime': Timestamp.fromDate(_endTime),
+                          'isOnline': _isOnline,
+                          'maxAttendees': _maxAttendees,
+                          'organizerID': _organizerID,
+                          'startTime': Timestamp.fromDate(_startTime),
+                          'tags': _tags,
+                          'title': _title,
+                        });
+                      }),
+                ),
+              ],
+            )
+        )
+    );
   }
 }
 
@@ -213,7 +215,7 @@ class _DateTimeSelectionsState extends State<DateTimeSelections> {
           ]),
           onPressed: () async {
             final TimeOfDay selection =
-                await showTimePicker(context: context, initialTime: time);
+            await showTimePicker(context: context, initialTime: time);
             if (selection != null) {
               time = selection;
               widget.setterCallback(date, selection);
