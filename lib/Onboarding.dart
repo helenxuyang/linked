@@ -41,7 +41,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
   TextEditingController classCtrl = TextEditingController();
 
   FocusNode _focusNodeBuildName;
-  FocusNode _focusNodeBuildInfo;
   FocusNode _focusNodeSocial;
 
   @override
@@ -52,13 +51,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     tags = [];
     classes = [];
     _focusNodeBuildName = FocusNode();
-    _focusNodeBuildInfo = FocusNode();
+    _focusNodeSocial = FocusNode();
   }
 
   @override
   void dispose() {
     _focusNodeBuildName.dispose();
-    _focusNodeBuildInfo.dispose();
+    _focusNodeSocial.dispose();
     super.dispose();
   }
 
@@ -99,72 +98,78 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _buildInfoPage(BuildContext context) {
-    return ListView(shrinkWrap: true, children: [
-      Text('A bit about you', style: Theme.of(context).textTheme.headline1),
-      smallSpacer,
-      Text('These will be shown on your profile for others to get to know you!',
-          style: Theme.of(context).textTheme.subtitle2),
-      bigSpacer,
-      Text('Intended major', style: Theme.of(context).textTheme.headline3),
-      smallSpacer,
-      TextFormField(
-        decoration: Utils.textFieldDecoration(hint: "Information Science"),
-        focusNode: _focusNodeBuildInfo,
-        textInputAction: TextInputAction.next,
-        onChanged: (value) {
-          setState(() {
-            major = value;
-          });
-        },
-        onFieldSubmitted: (value) => FocusScope.of(context).nextFocus(),
-      ),
-      smallSpacer,
-      Text('Graduation year', style: Theme.of(context).textTheme.headline3),
-      smallSpacer,
-      DropdownButton(
-        value: gradYear,
-        items: years
-            .map((year) =>
-                DropdownMenuItem(child: Text(year.toString()), value: year))
-            .toList(),
-        onChanged: (selection) {
-          setState(() {
-            gradYear = selection;
-          });
-        },
-      ),
-      smallSpacer,
-      Text('Fall 2020 status', style: Theme.of(context).textTheme.headline3),
-      smallSpacer,
-      DropdownButton(
-        value: f20Status,
-        items: statuses
-            .map((str) => DropdownMenuItem(
-                  child: Text(str),
-                  value: str,
-                ))
-            .toList(),
-        onChanged: (selection) {
-          setState(() {
-            f20Status = selection;
-          });
-        },
-      ),
-      smallSpacer,
-      Text('Introduce yourself!', style: Theme.of(context).textTheme.headline3),
-      smallSpacer,
-      TextFormField(
-        decoration:
-            Utils.textFieldDecoration(hint: "Tell me a bit about yourself!"),
-        onChanged: (value) {
-          setState(() {
-            bio = value;
-          });
-        },
-        textInputAction: TextInputAction.next,
-        onFieldSubmitted: (value) => FocusScope.of(context).nextFocus(),
-      ),
-    ]);
+    return ListView(
+        shrinkWrap: true,
+        scrollDirection: Axis.vertical,
+        children: [
+          Text('A bit about you', style: Theme.of(context).textTheme.headline1),
+          smallSpacer,
+          Text(
+              'These will be shown on your profile for others to get to know you!',
+              style: Theme.of(context).textTheme.subtitle2),
+          bigSpacer,
+          Text('Intended major', style: Theme.of(context).textTheme.headline3),
+          smallSpacer,
+          TextFormField(
+            decoration: Utils.textFieldDecoration(hint: "Information Science"),
+            textInputAction: TextInputAction.next,
+            onChanged: (value) {
+              setState(() {
+                major = value;
+              });
+            },
+          ),
+          smallSpacer,
+          Text('Graduation year', style: Theme.of(context).textTheme.headline3),
+          smallSpacer,
+          DropdownButton(
+            value: gradYear,
+            items: years
+                .map((year) =>
+                    DropdownMenuItem(child: Text(year.toString()), value: year))
+                .toList(),
+            onChanged: (selection) {
+              setState(() {
+                gradYear = selection;
+              });
+            },
+          ),
+          smallSpacer,
+          Text('Fall 2020 status',
+              style: Theme.of(context).textTheme.headline3),
+          smallSpacer,
+          DropdownButton(
+            value: f20Status,
+            items: statuses
+                .map((str) => DropdownMenuItem(
+                      child: Text(str),
+                      value: str,
+                    ))
+                .toList(),
+            onChanged: (selection) {
+              setState(() {
+                f20Status = selection;
+              });
+            },
+          ),
+          smallSpacer,
+          Text('Introduce yourself!',
+              style: Theme.of(context).textTheme.headline3),
+          smallSpacer,
+          TextFormField(
+            decoration: Utils.textFieldDecoration(
+                hint: "Tell me a bit about yourself!"),
+            onChanged: (value) {
+              setState(() {
+                bio = value;
+              });
+            },
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
+          )
+        ]);
   }
 
   Widget _buildSocialMediaRow(
