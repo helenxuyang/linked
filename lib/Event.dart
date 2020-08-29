@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
-import 'package:package_info/package_info.dart';
+import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import 'dart:developer';
 
 class Event {
@@ -68,8 +70,6 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     TextStyle titleStyle = TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
     TextStyle logisticsStyle = TextStyle(fontSize: 16);
-    TextStyle subtitleStyle =
-        TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
     TextStyle secondaryStyle = TextStyle(
         fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey);
 
@@ -87,7 +87,7 @@ class EventCard extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(24),
           child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
                 child: Text(event.title, style: titleStyle),
                 width: MediaQuery.of(context).size.width * 0.6),
@@ -97,15 +97,15 @@ class EventCard extends StatelessWidget {
                 SizedBox(width: 4),
                 event.isLive()
                     ? Text('Now',
-                        style: logisticsStyle.apply(
-                            color: Color.fromRGBO(0xeb, 0x8a, 0x90, 1.0)))
+                    style: logisticsStyle.apply(
+                        color: Color.fromRGBO(0xeb, 0x8a, 0x90, 1.0)))
                     : Text(
-                        DateFormat('E').format(event.startTime) +
-                            '. ' +
-                            DateFormat('MMMMd').format(event.startTime) +
-                            ' at ' +
-                            DateFormat('jm').format(event.startTime),
-                        style: logisticsStyle),
+                    DateFormat('E').format(event.startTime) +
+                        '. ' +
+                        DateFormat('MMMMd').format(event.startTime) +
+                        ' at ' +
+                        DateFormat('jm').format(event.startTime),
+                    style: logisticsStyle),
               ],
             ),
             Row(
@@ -167,32 +167,32 @@ class EventRow extends StatelessWidget {
       },
       child: Card(
           child: Padding(
-        padding:
+            padding:
             const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
-        child: Row(children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-                child: Text(event.title,
-                    style: TextStyle(fontSize: 16), softWrap: true),
-                width: MediaQuery.of(context).size.width * 0.6),
-            Text(
-                DateFormat('E').format(event.startTime) +
-                    '. ' +
-                    DateFormat('MMMMd').format(event.startTime) +
-                    ' at ' +
-                    DateFormat('jm').format(event.startTime),
-                style: TextStyle(
-                    fontSize: 12, color: Theme.of(context).accentColor)),
-            Text(event.isVirtual ? 'Virtual Event' : event.location,
-                style: TextStyle(
-                    fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
-          ]),
-          Spacer(),
-          Icon(Icons.people),
-          SizedBox(width: 2),
-          Text(event.attendeeIDs.length.toString())
-        ]),
-      )),
+            child: Row(children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                    child: Text(event.title,
+                        style: TextStyle(fontSize: 16), softWrap: true),
+                    width: MediaQuery.of(context).size.width * 0.6),
+                Text(
+                    DateFormat('E').format(event.startTime) +
+                        '. ' +
+                        DateFormat('MMMMd').format(event.startTime) +
+                        ' at ' +
+                        DateFormat('jm').format(event.startTime),
+                    style: TextStyle(
+                        fontSize: 12, color: Theme.of(context).accentColor)),
+                Text(event.isVirtual ? 'Virtual Event' : event.location,
+                    style: TextStyle(
+                        fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
+              ]),
+              Spacer(),
+              Icon(Icons.people),
+              SizedBox(width: 2),
+              Text(event.attendeeIDs.length.toString())
+            ]),
+          )),
     );
   }
 }
@@ -204,13 +204,13 @@ class EventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle subtitleStyle =
-        TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+    TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
               width: 50,
               child: FlatButton(
@@ -272,7 +272,7 @@ class EventPage extends StatelessWidget {
                   }
                   DocumentSnapshot eventDoc = snapshot.data;
                   List<String> attendeeIDs =
-                      List<String>.from(eventDoc.get('attendees'));
+                  List<String>.from(eventDoc.get('attendees'));
                   return AttendeeChips(attendeeIDs);
                 })
           ]),
@@ -294,8 +294,8 @@ class PersonChip extends StatelessWidget {
       avatar: CircleAvatar(
           child: ClipOval(
               child: Image.network(
-        doc.get('photoURL'),
-      ))),
+                doc.get('photoURL'),
+              ))),
       label: Text(doc.get('firstName') + ' ' + doc.get('lastName'),
           style: TextStyle(color: Theme.of(context).accentColor)),
       onPressed: () {
@@ -336,7 +336,7 @@ class AttendeeChips extends StatelessWidget {
       children: attendeeIDs.map((id) {
         return FutureBuilder(
             future:
-                FirebaseFirestore.instance.collection('users').doc(id).get(),
+            FirebaseFirestore.instance.collection('users').doc(id).get(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return Container();
@@ -358,7 +358,7 @@ class ShareButton extends StatelessWidget {
     return OutlineButton(
         borderSide: BorderSide(color: Colors.blue),
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         child: Text('SHARE', style: TextStyle(color: Colors.blue)),
         onPressed: () async {
           log("Share button pressed");
@@ -378,7 +378,7 @@ class ShareButton extends StatelessWidget {
             String endDateStr = event.startTime.day == event.endTime.day
                 ? DateFormat('jm').format(event.endTime)
                 : DateFormat('M/d/y ').format(event.endTime) +
-                    DateFormat('jm').format(event.endTime);
+                DateFormat('jm').format(event.endTime);
             String dateTimeLine =
                 "Date & Time: " + startDateStr + " to " + endDateStr + "\n";
             //"Date & Time: ${event.startTime} to ${event.endTime}\n"
@@ -437,7 +437,7 @@ class _RSVPButtonState extends State<RSVPButton> {
 
   void addSignUp(String userID, String eventID) async {
     DocumentReference userDoc =
-        FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.collection('users').doc(userID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot userSnap = await transaction.get(userDoc);
       transaction.update(
@@ -445,7 +445,7 @@ class _RSVPButtonState extends State<RSVPButton> {
     });
 
     DocumentReference eventDoc =
-        FirebaseFirestore.instance.collection('events').doc(eventID);
+    FirebaseFirestore.instance.collection('events').doc(eventID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot eventSnap = await transaction.get(eventDoc);
       transaction.update(eventSnap.reference,
@@ -455,7 +455,7 @@ class _RSVPButtonState extends State<RSVPButton> {
 
   void removeSignUp(String userID, String eventID) async {
     DocumentReference userDoc =
-        FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.collection('users').doc(userID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot userSnap = await transaction.get(userDoc);
       transaction.update(userSnap.reference,
@@ -463,7 +463,7 @@ class _RSVPButtonState extends State<RSVPButton> {
     });
 
     DocumentReference eventDoc =
-        FirebaseFirestore.instance.collection('events').doc(eventID);
+    FirebaseFirestore.instance.collection('events').doc(eventID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot eventSnap = await transaction.get(eventDoc);
       transaction.update(eventSnap.reference,
@@ -497,48 +497,80 @@ class _RSVPButtonState extends State<RSVPButton> {
           }
           DocumentSnapshot userDoc = snapshot.data;
           bool signedUp =
-              List<String>.from(userDoc.get('events')).contains(widget.eventID);
+          List<String>.from(userDoc.get('events')).contains(widget.eventID);
           return signedUp
               ? FlatButton(
-                  color: Theme.of(context).accentColor,
-                  disabledColor: Colors.transparent,
-                  textColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(children: [
-                    Icon(Icons.check),
-                    SizedBox(width: 2),
-                    Text('SIGNED UP'),
-                  ]),
-                  onPressed: disabled
-                      ? null
-                      : () {
-                          disable();
-                          removeSignUp(userID, widget.eventID);
-                        })
+              color: Theme.of(context).accentColor,
+              disabledColor: Colors.transparent,
+              textColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(children: [
+                Icon(Icons.check),
+                SizedBox(width: 2),
+                Text('SIGNED UP'),
+              ]),
+              onPressed: disabled
+                  ? null
+                  : () {
+                disable();
+                removeSignUp(userID, widget.eventID);
+              })
               : FlatButton(
-                  color: Theme.of(context).accentColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0)),
-                  child: Text('RSVP', style: TextStyle(color: Colors.white)),
-                  onPressed: disabled
-                      ? null
-                      : () {
-                          //TODO: create email screen
-                          disable();
-                          addSignUp(userID, widget.eventID);
-                        });
+              color: Theme.of(context).accentColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0)),
+              child: Text('RSVP', style: TextStyle(color: Colors.white)),
+              onPressed: disabled
+                  ? null
+                  : () async {
+                disable();
+                addSignUp(userID, widget.eventID);
+                FirebaseFirestore.instance.collection('events').doc(widget.eventID).get().then((doc) {
+                  EventUtils.addToCalendar(doc.get('title'), doc.get('location'), doc.get('description'), doc.get('startTime').toDate(), doc.get('endTime').toDate());
+                });
+              });
         });
   }
 }
 
-class EventMethods {
+class EventUtils {
+  static Widget noEventsMessage =
+  SizedBox(
+      width: double.infinity,
+      child: Column(
+          children: [
+            Text('No events here 😥'),
+            Text('Create or sign up for one to join in the fun!')
+          ]
+      )
+  );
+
   static Future<bool> retrieveSignedUp(String userID, String eventID) {
     DocumentReference userDoc =
-        FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.collection('users').doc(userID);
     return userDoc
         .get()
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
+  }
+
+  static addToCalendar(String title, String location, String description, DateTime startTime, DateTime endTime) async {
+
+    cal.Event calEvent = cal.Event(
+      title: title,
+      location: location,
+      description: description,
+      startDate: startTime,
+      endDate: endTime,
+    );
+    String timezone;
+    try {
+      timezone = await FlutterNativeTimezone.getLocalTimezone();
+      calEvent.timeZone = timezone;
+    } on PlatformException {
+      timezone = null;
+    }
+    cal.Add2Calendar.addEvent2Cal(calEvent);
   }
 }

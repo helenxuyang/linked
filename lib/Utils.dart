@@ -5,11 +5,14 @@ class Utils {
     'video games',
     'board games',
     'music',
-    'tv show',
+    'tv shows',
     'movies',
     'study group',
-    'making friends'
+    'homework',
+    'making friends',
+    'discussion'
   ];
+
   static final TextStyle proximaNova = TextStyle(fontFamily: 'Proxima-Nova');
   static InputDecoration textFieldDecoration({String hint = ""}) {
     return InputDecoration(

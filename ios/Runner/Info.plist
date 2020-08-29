@@ -41,5 +41,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSCalendarsUsageDescription</key>
+    <string>For adding events to your phone calendar</string>
+    <key>NSContactsUsageDescription</key>
+    <string>For calendar events on your phone</string>
 </dict>
 </plist>

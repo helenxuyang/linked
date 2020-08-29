@@ -21,7 +21,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
   List<String> _tags = [];
 
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _tagCtrl = TextEditingController();
   FocusNode _focusNode;
   bool noMax = true;
 
@@ -131,16 +130,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
                               SizedBox(height: 12),
                               Text('Location',
                                   style: Theme.of(context).textTheme.headline3),
-                              if (_isVirtual)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                      'Optional, leave blank to generate Google Meet URL'),
-                                ),
                               TextFormField(
                                 textInputAction: TextInputAction.next,
                                 validator: (value) {
-                                  if (!_isVirtual && value.isEmpty) {
+                                  if (value.isEmpty) {
                                     return 'Please enter a location.';
                                   }
                                   return null;
@@ -153,9 +146,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                 onFieldSubmitted: (value) {
                                   FocusScope.of(context).nextFocus();
                                 },
-                                decoration: Utils.textFieldDecoration(hint: _type == Event.appOptions[0]
-                                    ? 'example.com'
-                                    : 'Arts Quad'),
+                                decoration: Utils.textFieldDecoration(hint: _isVirtual ? 'Paste Zoom/Google Meet link' : 'Arts Quad'),
                               ),
                               SizedBox(height: 12),
                               Text("Description",
@@ -303,14 +294,15 @@ class _CreateEventPageState extends State<CreateEventPage> {
                             'title': _title,
                             'isVirtual': _isVirtual,
                             'location': _location,
-                            'attendees': [_organizerID],
                             'description': _description,
-                            'endTime': Timestamp.fromDate(_endTime),
-                            'maxAttendees': _maxAttendees,
                             'organizerID': _organizerID,
+                            'attendees': [_organizerID],
+                            'maxAttendees': _maxAttendees,
                             'startTime': Timestamp.fromDate(_startTime),
+                            'endTime': Timestamp.fromDate(_endTime),
                             'tags': _tags,
                           });
+                          EventUtils.addToCalendar(_title, _location, _description, _startTime, _endTime);
                           Navigator.pop(context);
                         }
                       });
