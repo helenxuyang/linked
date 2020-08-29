@@ -22,6 +22,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   ];
   String firstName;
   String lastName;
+  String major;
+  String bio;
   String f20Status;
   String instagramUser;
   String facebookUser;
@@ -33,16 +35,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget smallSpacer = SizedBox(height: 8);
   Widget bigSpacer = SizedBox(height: 24);
 
-  TextEditingController firstNameCtrl = TextEditingController();
-  TextEditingController lastNameCtrl = TextEditingController();
-  TextEditingController majorCtrl = TextEditingController();
-  TextEditingController bioCtrl = TextEditingController();
   TextEditingController instagramCtrl = TextEditingController();
   TextEditingController facebookCtrl = TextEditingController();
   TextEditingController linkedinCtrl = TextEditingController();
   TextEditingController classCtrl = TextEditingController();
 
   FocusNode _focusNodeBuildName;
+  FocusNode _focusNodeBuildInfo;
 
   @override
   initState() {
@@ -105,14 +104,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
       bigSpacer,
       Text('Intended major', style: Theme.of(context).textTheme.headline3),
       smallSpacer,
-      TextField(
-        decoration: Utils.textFieldDecoration(),
-        controller: majorCtrl,
-        onSubmitted: (value) {
+      TextFormField(
+        decoration: Utils.textFieldDecoration(hint: "Information Science"),
+        focusNode: _focusNodeBuildInfo,
+        textInputAction: TextInputAction.next,
+        onChanged: (value) {
           setState(() {
-            majorCtrl.text = value;
+            major = value;
           });
         },
+        onFieldSubmitted: (value) => FocusScope.of(context).nextFocus(),
       ),
       smallSpacer,
       Text('Graduation year', style: Theme.of(context).textTheme.headline3),
@@ -149,12 +150,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
       smallSpacer,
       Text('Introduce yourself!', style: Theme.of(context).textTheme.headline3),
       smallSpacer,
-      TextField(
+      TextFormField(
         decoration: Utils.textFieldDecoration(),
-        controller: bioCtrl,
-        onSubmitted: (value) {
+        onChanged: (value) {
           setState(() {
-            bioCtrl.text = value;
+            bio = value;
           });
         },
       ),
@@ -392,15 +392,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 }
                 break;
               case 1:
-                if (majorCtrl.text == null || majorCtrl.text.isEmpty) {
+                String scaffoldText = "";
+                if (major == null || major.isEmpty) {
+                  scaffoldText +=
+                      'Please enter your major, feel free to put \'Undecided\' if you\'re unsure!\n';
+                } else if (bio == null || bio.isEmpty) {
+                  scaffoldText += 'Please enter a short bio!';
+                }
+                if (scaffoldText.isNotEmpty) {
                   valid = false;
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Please enter your major, feel free to put \'Undecided\' if you\'re unsure!')));
-                } else if (bioCtrl.text == null || bioCtrl.text.isEmpty) {
-                  valid = false;
-                  Scaffold.of(context).showSnackBar(
-                      SnackBar(content: Text('Please enter a short bio!')));
+                  Scaffold.of(context)
+                      .showSnackBar(SnackBar(content: Text(scaffoldText)));
                 }
                 break;
               default:
@@ -428,12 +430,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 Provider.of<CurrentUserInfo>(context, listen: false).id;
             User user = FirebaseAuth.instance.currentUser;
             FirebaseFirestore.instance.collection('users').doc(userID).set({
-              'firstName': firstNameCtrl.text,
-              'lastName': lastNameCtrl.text,
-              'bio': bioCtrl.text,
+              'firstName': firstName,
+              'lastName': lastName,
+              'bio': bio,
               'status': f20Status,
               'photoURL': user.photoURL,
-              'major': majorCtrl.text,
+              'major': major,
               'classYear': gradYear,
               'classes': classes,
               'interestedTags': tags,
