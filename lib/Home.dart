@@ -16,52 +16,56 @@ class HomePage extends StatelessWidget {
         Padding(
           padding: EdgeInsets.all(24),
           child: SingleChildScrollView(
-            child: Column(children: [
-              Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Row(children: [
-                  Text('Discover Events',
-                      style: Theme.of(context).textTheme.headline1),
-                  Spacer(),
-                  IconButton(
-                    icon: Icon(Icons.filter_list),
-                    onPressed: () {
-                      //TODO: add filter options
-                    },
-                  )
-                ]),
-              ),
-              EventGroup(
-                  'Happening Now',
-                  FirebaseFirestore.instance
-                      .collection('events')
-                      .where('startTime', isLessThan: Timestamp.now())
-                      .orderBy('startTime')
-                      .snapshots()),
-              SizedBox(height: 24),
-              StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(userID)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Container();
-                    }
-                    List<String> tags =
-                        List<String>.from(snapshot.data.get('interestedTags'));
-                    return Column(
-                        //TODO: use tags from backend
-                        children: tags
-                            .map((tag) => EventGroup(
-                                'Tag: $tag',
-                                FirebaseFirestore.instance
-                                    .collection('events')
-                                    .where('tags', arrayContains: tag)
-                                    .snapshots()))
-                            .toList());
-                  })
-            ]),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Row(children: [
+                        Text('Discover Events',
+                            style: Theme.of(context).textTheme.headline1),
+                        Spacer(),
+                        IconButton(
+                          icon: Icon(Icons.filter_list),
+                          onPressed: () {
+                            //TODO: add filter options
+                          },
+                        )
+                      ]),
+                    ),
+                    EventGroup(
+                        'Happening Now',
+                        FirebaseFirestore.instance
+                            .collection('events')
+                            .where('startTime', isLessThan: Timestamp.now())
+                            .orderBy('startTime')
+                            .snapshots()),
+                    SizedBox(height: 24),
+                    StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(userID)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Container();
+                          }
+                          List<String> tags =
+                          List<String>.from(snapshot.data.get('interestedTags'));
+                          return Column(
+                            //TODO: use tags from backend
+                              children: tags
+                                  .map((tag) => EventGroup(
+                                  'Tag: $tag',
+                                  FirebaseFirestore.instance
+                                      .collection('events')
+                                      .where('tags', arrayContains: tag)
+                                      .snapshots()))
+                                  .toList());
+                        })
+                  ]),
+            ),
           ),
         ),
         Positioned(
@@ -75,7 +79,9 @@ class HomePage extends StatelessWidget {
                         return CreateEventPage();
                       });
                 },
-                child: Icon(Icons.add))),
+                child: Icon(Icons.add)
+            )
+        ),
       ],
     );
   }
@@ -96,7 +102,7 @@ class EventGroup extends StatelessWidget {
           return Container();
         }
         List<DocumentSnapshot> docs =
-            List<DocumentSnapshot>.from(snapshot.data.documents).where((doc) {
+        List<DocumentSnapshot>.from(snapshot.data.documents).where((doc) {
           return doc.get('endTime').seconds > Timestamp.now().seconds;
         }).toList();
         docs = docs.sublist(0, min(3, docs.length));
@@ -108,7 +114,7 @@ class EventGroup extends StatelessWidget {
             Text(title, style: TextStyle(fontSize: 22)),
             Spacer(),
             FlatButton(
-                child: Text('view more',
+                child: Text('view all',
                     style: TextStyle(
                         fontSize: 14, color: Theme.of(context).accentColor)),
                 onPressed: () {
@@ -141,7 +147,7 @@ class EventGroupPage extends StatelessWidget {
         child: StreamBuilder(
           stream: FirebaseFirestore.instance
               .collection('events')
-              .where('startTime', isLessThan: Timestamp.now())
+              .where('startTime', isGreaterThanOrEqualTo: Timestamp.now())
               .orderBy('startTime')
               .snapshots(),
           builder: (context, snapshot) {
@@ -149,8 +155,8 @@ class EventGroupPage extends StatelessWidget {
               return Container();
             }
             List<DocumentSnapshot> docs =
-                List<DocumentSnapshot>.from(snapshot.data.documents)
-                    .where((doc) {
+            List<DocumentSnapshot>.from(snapshot.data.documents)
+                .where((doc) {
               return doc.get('endTime').toDate().isAfter(DateTime.now());
             }).toList();
             if (docs.isEmpty) {
@@ -175,8 +181,8 @@ class EventGroupPage extends StatelessWidget {
                       child: Scrollbar(
                         child: ListView(
                             children: List<EventCard>.from(docs.map((doc) {
-                          return EventCard(Event.fromDoc(doc));
-                        }))),
+                              return EventCard(Event.fromDoc(doc));
+                            }))),
                       ),
                     )
                   ]),
