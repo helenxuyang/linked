@@ -450,19 +450,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 
-  ScrollController scrollCtrl = ScrollController();
-  bool fitsOnScreen = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        fitsOnScreen = (scrollCtrl.position.maxScrollExtent == 0);
-      });
-    });
-  }
-
   List<GlobalKey<FormState>> keys = List.filled(5, GlobalKey<FormState>());
   @override
   Widget build(BuildContext context) {
