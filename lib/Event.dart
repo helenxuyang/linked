@@ -259,7 +259,9 @@ class EventPage extends StatelessWidget {
             OrganizerChip(event.organizer),
             SizedBox(height: 8),
             Text(
-                'Attendees (${event.attendeeIDs.length.toString()}/${event.maxAttendees.toString()})',
+                event.maxAttendees == null
+                    ? 'Attendees (${event.attendeeIDs.length.toString()})'
+                    : 'Attendees (${event.attendeeIDs.length.toString()}/${event.maxAttendees.toString()})',
                 style: subtitleStyle),
             StreamBuilder(
                 stream: FirebaseFirestore.instance

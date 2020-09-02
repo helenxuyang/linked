@@ -90,6 +90,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                               style: Theme.of(context).textTheme.headline3),
                           TextFormField(
                             focusNode: _focusNode,
+                            initialValue: _title,
                             textInputAction: TextInputAction.next,
                             decoration: Utils.textFieldDecoration(
                                 hint: 'PowerPoint Palooza Spectacular'),
@@ -133,6 +134,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                           Text('Location',
                               style: Theme.of(context).textTheme.headline3),
                           TextFormField(
+                            initialValue: _location,
                             textInputAction: TextInputAction.next,
                             validator: (value) {
                               if (value.isEmpty) {
@@ -182,12 +184,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
                           SizedBox(height: 12),
                           Text('Event Start Time',
                               style: Theme.of(context).textTheme.headline3),
-                          DateTimeSelections(DateTime.now(), setStart),
+                          DateTimeSelections(_startTime, setStart),
                           SizedBox(height: 12),
                           Text('Event End Time',
                               style: Theme.of(context).textTheme.headline3),
-                          DateTimeSelections(
-                              DateTime.now().add(Duration(hours: 1)), setEnd),
+                          DateTimeSelections(_endTime, setEnd),
                           SizedBox(height: 12),
                           Text('Max Attendees',
                               style: Theme.of(context).textTheme.headline3),
