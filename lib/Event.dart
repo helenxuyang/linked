@@ -87,7 +87,7 @@ class EventCard extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(24),
           child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
                 child: Text(event.title, style: titleStyle),
                 width: MediaQuery.of(context).size.width * 0.6),
@@ -97,15 +97,15 @@ class EventCard extends StatelessWidget {
                 SizedBox(width: 4),
                 event.isLive()
                     ? Text('Now',
-                        style: logisticsStyle.apply(
-                            color: Color.fromRGBO(0xeb, 0x8a, 0x90, 1.0)))
+                    style: logisticsStyle.apply(
+                        color: Color.fromRGBO(0xeb, 0x8a, 0x90, 1.0)))
                     : Text(
-                        DateFormat('E').format(event.startTime) +
-                            '. ' +
-                            DateFormat('MMMMd').format(event.startTime) +
-                            ' at ' +
-                            DateFormat('jm').format(event.startTime),
-                        style: logisticsStyle),
+                    DateFormat('E').format(event.startTime) +
+                        '. ' +
+                        DateFormat('MMMMd').format(event.startTime) +
+                        ' at ' +
+                        DateFormat('jm').format(event.startTime),
+                    style: logisticsStyle),
               ],
             ),
             Row(
@@ -125,7 +125,8 @@ class EventCard extends StatelessWidget {
                         (event.maxAttendees == null
                             ? ''
                             : '/' + event.maxAttendees.toString()),
-                    style: logisticsStyle),
+                    style: logisticsStyle
+                ),
               ],
             ),
             Row(children: [
@@ -167,32 +168,32 @@ class EventRow extends StatelessWidget {
       },
       child: Card(
           child: Padding(
-        padding:
+            padding:
             const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
-        child: Row(children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-                child: Text(event.title,
-                    style: TextStyle(fontSize: 16), softWrap: true),
-                width: MediaQuery.of(context).size.width * 0.6),
-            Text(
-                DateFormat('E').format(event.startTime) +
-                    '. ' +
-                    DateFormat('MMMMd').format(event.startTime) +
-                    ' at ' +
-                    DateFormat('jm').format(event.startTime),
-                style: TextStyle(
-                    fontSize: 12, color: Theme.of(context).accentColor)),
-            Text(event.isVirtual ? 'Virtual Event' : event.location,
-                style: TextStyle(
-                    fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
-          ]),
-          Spacer(),
-          Icon(Icons.people),
-          SizedBox(width: 2),
-          Text(event.attendeeIDs.length.toString())
-        ]),
-      )),
+            child: Row(children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                    child: Text(event.title,
+                        style: TextStyle(fontSize: 16), softWrap: true),
+                    width: MediaQuery.of(context).size.width * 0.6),
+                Text(
+                    DateFormat('E').format(event.startTime) +
+                        '. ' +
+                        DateFormat('MMMMd').format(event.startTime) +
+                        ' at ' +
+                        DateFormat('jm').format(event.startTime),
+                    style: TextStyle(
+                        fontSize: 12, color: Theme.of(context).accentColor)),
+                Text(event.isVirtual ? 'Virtual Event' : event.location,
+                    style: TextStyle(
+                        fontSize: 12, color: Color.fromRGBO(0x84, 0x84, 0x84, 1.0)))
+              ]),
+              Spacer(),
+              Icon(Icons.people),
+              SizedBox(width: 2),
+              Text(event.attendeeIDs.length.toString())
+            ]),
+          )),
     );
   }
 }
@@ -204,78 +205,88 @@ class EventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle subtitleStyle =
-        TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+    TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              width: 50,
-              child: FlatButton(
-                  splashColor: Colors.white,
-                  highlightColor: Colors.white,
-                  padding: EdgeInsets.only(left: 0, right: 4),
-                  child: Align(
-                      child: Text('Back',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.normal)),
-                      alignment: Alignment.centerLeft),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-            ),
-            Text(event.title,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            Text(
-                DateFormat('EEEE').format(event.startTime) +
-                    ', ' +
-                    DateFormat('MMMMd').format(event.startTime) +
-                    ' at ' +
-                    DateFormat('jm').format(event.startTime),
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Color.fromRGBO(0xEB, 0x8a, 0x90, 1.0))),
-            Text(event.isVirtual ? 'Virtual Event' : event.location,
-                style: TextStyle(fontSize: 16)),
-            SizedBox(height: 8),
-            Row(children: [
-              Expanded(child: RSVPButton(event.eventID)),
-              SizedBox(width: 16),
-              Expanded(child: ShareButton(event))
-            ]),
-            SizedBox(height: 8),
-            Text('Description', style: subtitleStyle),
-            SizedBox(height: 4),
-            Text(event.description),
-            SizedBox(height: 4),
-            Text(event.tags.map((tag) => '#' + tag).join('  '),
-                style: TextStyle(
-                    color: Color.fromRGBO(0x8F, 0x8F, 0x8F, 1.0),
-                    fontStyle: FontStyle.italic)),
-            SizedBox(height: 8),
-            Text('Organizer', style: subtitleStyle),
-            OrganizerChip(event.organizer),
-            SizedBox(height: 8),
-            Text(
-                'Attendees (${event.attendeeIDs.length.toString()}/${event.maxAttendees.toString()})',
-                style: subtitleStyle),
-            StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('events')
-                    .doc(event.eventID)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Container();
-                  }
-                  DocumentSnapshot eventDoc = snapshot.data;
-                  List<String> attendeeIDs =
+          ListView(
+              children: [
+                Container(
+                  width: 50,
+                  child: FlatButton(
+                      splashColor: Colors.white,
+                      highlightColor: Colors.white,
+                      padding: EdgeInsets.only(left: 0, right: 4),
+                      child: Align(
+                          child: Text('Back',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.normal)),
+                          alignment: Alignment.centerLeft),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
+                ),
+                Text(event.title,
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                Text(
+                    DateFormat('EEEE').format(event.startTime) +
+                        ', ' +
+                        DateFormat('MMMMd').format(event.startTime) +
+                        ' at ' +
+                        DateFormat('jm').format(event.startTime),
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromRGBO(0xEB, 0x8a, 0x90, 1.0))),
+                Text(event.isVirtual ? 'Virtual Event' : event.location,
+                    style: TextStyle(fontSize: 16)),
+                SizedBox(height: 8),
+                Row(children: [
+                  Expanded(child: RSVPButton(event.eventID)),
+                  SizedBox(width: 16),
+                  Expanded(child: ShareButton(event))
+                ]),
+                SizedBox(height: 8),
+                Text('Description', style: subtitleStyle),
+                SizedBox(height: 4),
+                Text(event.description),
+                SizedBox(height: 4),
+                Text(event.tags.map((tag) => '#' + tag).join('  '),
+                    style: TextStyle(
+                        color: Color.fromRGBO(0x8F, 0x8F, 0x8F, 1.0),
+                        fontStyle: FontStyle.italic)),
+                SizedBox(height: 8),
+                Text('Organizer', style: subtitleStyle),
+                Align(
+                    alignment: Alignment.centerLeft,
+
+                    child: OrganizerChip(event.organizer),
+                ),
+                SizedBox(height: 8),
+                Text(
+                    event.attendeeIDs.length.toString() +
+                        (event.maxAttendees == null
+                            ? ''
+                            : '/' + event.maxAttendees.toString())
+                        + ' attendees:',
+                    style: subtitleStyle
+                ),
+                StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('events')
+                        .doc(event.eventID)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container();
+                      }
+                      DocumentSnapshot eventDoc = snapshot.data;
+                      List<String> attendeeIDs =
                       List<String>.from(eventDoc.get('attendees'));
-                  return AttendeeChips(attendeeIDs);
-                })
-          ]),
+                      return AttendeeChips(attendeeIDs);
+                    })
+              ]),
         ),
       ),
     );
@@ -294,8 +305,8 @@ class PersonChip extends StatelessWidget {
       avatar: CircleAvatar(
           child: ClipOval(
               child: Image.network(
-        doc.get('photoURL'),
-      ))),
+                doc.get('photoURL'),
+              ))),
       label: Text(doc.get('firstName') + ' ' + doc.get('lastName'),
           style: TextStyle(color: Theme.of(context).accentColor)),
       onPressed: () {
@@ -336,7 +347,7 @@ class AttendeeChips extends StatelessWidget {
       children: attendeeIDs.map((id) {
         return FutureBuilder(
             future:
-                FirebaseFirestore.instance.collection('users').doc(id).get(),
+            FirebaseFirestore.instance.collection('users').doc(id).get(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return Container();
@@ -358,7 +369,7 @@ class ShareButton extends StatelessWidget {
     return OutlineButton(
         borderSide: BorderSide(color: Colors.blue),
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         child: Text('SHARE', style: TextStyle(color: Colors.blue)),
         onPressed: () async {
           log("Share button pressed");
@@ -378,7 +389,7 @@ class ShareButton extends StatelessWidget {
             String endDateStr = event.startTime.day == event.endTime.day
                 ? DateFormat('jm').format(event.endTime)
                 : DateFormat('M/d/y ').format(event.endTime) +
-                    DateFormat('jm').format(event.endTime);
+                DateFormat('jm').format(event.endTime);
             String dateTimeLine =
                 "Date & Time: " + startDateStr + " to " + endDateStr + "\n";
             //"Date & Time: ${event.startTime} to ${event.endTime}\n"
@@ -437,7 +448,7 @@ class _RSVPButtonState extends State<RSVPButton> {
 
   void addSignUp(String userID, String eventID) async {
     DocumentReference userDoc =
-        FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.collection('users').doc(userID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot userSnap = await transaction.get(userDoc);
       transaction.update(
@@ -445,7 +456,7 @@ class _RSVPButtonState extends State<RSVPButton> {
     });
 
     DocumentReference eventDoc =
-        FirebaseFirestore.instance.collection('events').doc(eventID);
+    FirebaseFirestore.instance.collection('events').doc(eventID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot eventSnap = await transaction.get(eventDoc);
       transaction.update(eventSnap.reference,
@@ -455,7 +466,7 @@ class _RSVPButtonState extends State<RSVPButton> {
 
   void removeSignUp(String userID, String eventID) async {
     DocumentReference userDoc =
-        FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.collection('users').doc(userID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot userSnap = await transaction.get(userDoc);
       transaction.update(userSnap.reference,
@@ -463,7 +474,7 @@ class _RSVPButtonState extends State<RSVPButton> {
     });
 
     DocumentReference eventDoc =
-        FirebaseFirestore.instance.collection('events').doc(eventID);
+    FirebaseFirestore.instance.collection('events').doc(eventID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot eventSnap = await transaction.get(eventDoc);
       transaction.update(eventSnap.reference,
@@ -497,49 +508,49 @@ class _RSVPButtonState extends State<RSVPButton> {
           }
           DocumentSnapshot userDoc = snapshot.data;
           bool signedUp =
-              List<String>.from(userDoc.get('events')).contains(widget.eventID);
+          List<String>.from(userDoc.get('events')).contains(widget.eventID);
           return signedUp
               ? FlatButton(
-                  color: Theme.of(context).accentColor,
-                  disabledColor: Colors.transparent,
-                  textColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(children: [
-                    Icon(Icons.check),
-                    SizedBox(width: 2),
-                    Text('SIGNED UP'),
-                  ]),
-                  onPressed: disabled
-                      ? null
-                      : () {
-                          disable();
-                          removeSignUp(userID, widget.eventID);
-                        })
+              color: Theme.of(context).accentColor,
+              disabledColor: Colors.transparent,
+              textColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(children: [
+                Icon(Icons.check),
+                SizedBox(width: 2),
+                Text('SIGNED UP'),
+              ]),
+              onPressed: disabled
+                  ? null
+                  : () {
+                disable();
+                removeSignUp(userID, widget.eventID);
+              })
               : FlatButton(
-                  color: Theme.of(context).accentColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0)),
-                  child: Text('RSVP', style: TextStyle(color: Colors.white)),
-                  onPressed: disabled
-                      ? null
-                      : () async {
-                          disable();
-                          addSignUp(userID, widget.eventID);
-                          FirebaseFirestore.instance
-                              .collection('events')
-                              .doc(widget.eventID)
-                              .get()
-                              .then((doc) {
-                            EventUtils.addToCalendar(
-                                doc.get('title'),
-                                doc.get('location'),
-                                doc.get('description'),
-                                doc.get('startTime').toDate(),
-                                doc.get('endTime').toDate());
-                          });
-                        });
+              color: Theme.of(context).accentColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0)),
+              child: Text('RSVP', style: TextStyle(color: Colors.white)),
+              onPressed: disabled
+                  ? null
+                  : () async {
+                disable();
+                addSignUp(userID, widget.eventID);
+                FirebaseFirestore.instance
+                    .collection('events')
+                    .doc(widget.eventID)
+                    .get()
+                    .then((doc) {
+                  EventUtils.addToCalendar(
+                      doc.get('title'),
+                      doc.get('location'),
+                      doc.get('description'),
+                      doc.get('startTime').toDate(),
+                      doc.get('endTime').toDate());
+                });
+              });
         });
   }
 }
@@ -554,7 +565,7 @@ class EventUtils {
 
   static Future<bool> retrieveSignedUp(String userID, String eventID) {
     DocumentReference userDoc =
-        FirebaseFirestore.instance.collection('users').doc(userID);
+    FirebaseFirestore.instance.collection('users').doc(userID);
     return userDoc
         .get()
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));

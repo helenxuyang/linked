@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'Event.dart';
 import 'CreateEvent.dart';
 import 'Login.dart';
+import 'Utils.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -17,7 +18,6 @@ class HomePage extends StatelessWidget {
           padding: EdgeInsets.all(24),
           child: SingleChildScrollView(
             child: SizedBox(
-              height: MediaQuery.of(context).size.height,
               child: Column(
                   children: [
                     Padding(
@@ -51,18 +51,43 @@ class HomePage extends StatelessWidget {
                           if (!snapshot.hasData) {
                             return Container();
                           }
-                          List<String> tags =
-                          List<String>.from(snapshot.data.get('interestedTags'));
-                          return Column(
-                            //TODO: use tags from backend
-                              children: tags
-                                  .map((tag) => EventGroup(
-                                  'Tag: $tag',
-                                  FirebaseFirestore.instance
-                                      .collection('events')
-                                      .where('tags', arrayContains: tag)
-                                      .snapshots()))
-                                  .toList());
+                          List<String> interestedTags = List<String>.from(snapshot.data.get('interestedTags'));
+                          List<String> otherTags = Utils.allTags.where((tag) => !interestedTags.contains(tag)).toList();
+                          List<Widget> interestedGroups = interestedTags.map((tag) => EventGroup(
+                              '#$tag',
+                              FirebaseFirestore.instance
+                                  .collection('events')
+                                  .where('tags', arrayContains: tag)
+                                  .snapshots()))
+                              .toList();
+                          List<Widget> otherGroups = otherTags.map((tag) => EventGroup(
+                              '#$tag',
+                              FirebaseFirestore.instance
+                                  .collection('events')
+                                  .where('tags', arrayContains: tag)
+                                  .snapshots()))
+                              .toList();
+                          return ListView(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              children: [
+                                Text('Your Tags', style: Theme.of(context).textTheme.headline2),
+                                interestedGroups.isEmpty ? EventUtils.noEventsMessage :
+                                ListView(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    children: interestedGroups
+                                ),
+                                SizedBox(height: 16),
+                                Text('Other Events', style: Theme.of(context).textTheme.headline2),
+                                otherGroups.isEmpty ? EventUtils.noEventsMessage :
+                                ListView(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    children: otherGroups
+                                ),
+                              ]
+                          );
                         })
                   ]),
             ),
@@ -111,7 +136,7 @@ class EventGroup extends StatelessWidget {
         }
         return Column(children: [
           Row(children: [
-            Text(title, style: TextStyle(fontSize: 22)),
+            Text(title, style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic, color: Theme.of(context).accentColor)),
             Spacer(),
             FlatButton(
                 child: Text('view all',
