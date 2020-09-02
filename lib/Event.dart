@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart';
+import 'package:no_probllama_app/CreateEvent.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Profile.dart';
+import 'EditEvent.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
@@ -201,8 +203,50 @@ class EventPage extends StatelessWidget {
   EventPage(this.event);
   final Event event;
 
+  Widget backButton(context) {
+    return Container(
+      width: 50,
+      child: FlatButton(
+          splashColor: Colors.white,
+          highlightColor: Colors.white,
+          padding: EdgeInsets.only(left: 0, right: 4),
+          child: Align(
+              child: Text('Back',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
+              alignment: Alignment.centerLeft),
+          onPressed: () {
+            Navigator.pop(context);
+          }),
+    );
+  }
+
+  Widget editButton(context, Event event, userID) {
+    return event.organizer == userID
+        ? Container(
+            width: 50,
+            child: FlatButton(
+                splashColor: Colors.white,
+                highlightColor: Colors.white,
+                padding: EdgeInsets.only(left: 0, right: 4),
+                child: Align(
+                    child: Text('Edit',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.normal)),
+                    alignment: Alignment.centerLeft),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => EditEventPage(event)));
+                }),
+          )
+        : Container();
+  }
+
   @override
   Widget build(BuildContext context) {
+    String userID = Provider.of<CurrentUserInfo>(context).id;
     TextStyle subtitleStyle =
         TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
     return Scaffold(
@@ -211,21 +255,11 @@ class EventPage extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              width: 50,
-              child: FlatButton(
-                  splashColor: Colors.white,
-                  highlightColor: Colors.white,
-                  padding: EdgeInsets.only(left: 0, right: 4),
-                  child: Align(
-                      child: Text('Back',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.normal)),
-                      alignment: Alignment.centerLeft),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-            ),
+            Row(children: [
+              backButton(context),
+              Spacer(),
+              editButton(context, event, userID),
+            ]),
             Text(event.title,
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             Text(
