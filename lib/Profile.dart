@@ -6,8 +6,9 @@ import 'Login.dart';
 import 'Event.dart';
 
 class ProfilePage extends StatelessWidget {
-  ProfilePage(this.id);
+  ProfilePage(this.id, this.hasBackButton);
   final String id;
+  final bool hasBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (id != userID)
+          if (hasBackButton)
             Container(
               width: 50,
               child: FlatButton(

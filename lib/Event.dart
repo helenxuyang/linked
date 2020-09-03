@@ -139,8 +139,11 @@ class EventCard extends StatelessWidget {
                 child: Text(event.description, style: logisticsStyle),
                 width: MediaQuery.of(context).size.width * 0.6),
             SizedBox(height: 8),
-            Text(event.tags.map((tag) => '#' + tag).join('  '),
-                style: secondaryStyle),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: Text(event.tags.map((tag) => '#' + tag).join('  '),
+                  style: secondaryStyle),
+            ),
             SizedBox(height: 8),
             Row(children: [
               event.isVirtual && event.isLive()
@@ -259,9 +262,9 @@ class EventPage extends StatelessWidget {
                 SizedBox(height: 8),
                 Text('Organizer', style: subtitleStyle),
                 Align(
-                    alignment: Alignment.centerLeft,
+                  alignment: Alignment.centerLeft,
 
-                    child: OrganizerChip(event.organizer),
+                  child: OrganizerChip(event.organizer),
                 ),
                 SizedBox(height: 8),
                 Text(
@@ -272,20 +275,7 @@ class EventPage extends StatelessWidget {
                         + ' attendees:',
                     style: subtitleStyle
                 ),
-                StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('events')
-                        .doc(event.eventID)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return Container();
-                      }
-                      DocumentSnapshot eventDoc = snapshot.data;
-                      List<String> attendeeIDs =
-                      List<String>.from(eventDoc.get('attendees'));
-                      return AttendeeChips(attendeeIDs);
-                    })
+                AttendeeChips(event.attendeeIDs)
               ]),
         ),
       ),
@@ -314,7 +304,7 @@ class PersonChip extends StatelessWidget {
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    Scaffold(body: SafeArea(child: ProfilePage(doc.id)))));
+                    Scaffold(body: SafeArea(child: ProfilePage(doc.id, true)))));
       },
     );
   }

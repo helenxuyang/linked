@@ -71,7 +71,7 @@ class _MainPageState extends State<MainPage> {
       case SCHEDULE:
         return SchedulePage();
       case PROFILE:
-        return ProfilePage(userID);
+        return ProfilePage(userID, false);
       default:
         return Column();
     }
