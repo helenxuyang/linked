@@ -134,60 +134,10 @@ class EventGroup extends StatelessWidget {
         if (docs.isEmpty) {
           return Container();
         }
-        return Column(children: [
-          Row(children: [
-            Text(title, style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic, color: Theme.of(context).accentColor)),
-            Spacer(),
-            FlatButton(
-                child: Text('view all',
-                    style: TextStyle(
-                        fontSize: 14, color: Theme.of(context).accentColor)),
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => EventGroupPage(title, stream)));
-                })
-          ]),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(children: List<EventCard>.from(docs.map((doc) {
-              return EventCard(Event.fromDoc(doc));
-            }))),
-          )
-        ]);
-      },
-    );
-  }
-}
-
-class EventGroupPage extends StatelessWidget {
-  EventGroupPage(this.title, this.stream);
-  final String title;
-  final Stream stream;
-
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: StreamBuilder(
-          stream: FirebaseFirestore.instance
-              .collection('events')
-              .where('startTime', isGreaterThanOrEqualTo: Timestamp.now())
-              .orderBy('startTime')
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Container();
-            }
-            List<DocumentSnapshot> docs =
-            List<DocumentSnapshot>.from(snapshot.data.documents)
-                .where((doc) {
-              return doc.get('endTime').toDate().isAfter(DateTime.now());
-            }).toList();
-            if (docs.isEmpty) {
-              return Container();
-            }
-            return Padding(
+        Widget eventGroupPage =
+        Scaffold(
+          body: SafeArea(
+            child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,10 +161,34 @@ class EventGroupPage extends StatelessWidget {
                       ),
                     )
                   ]),
-            );
-          },
-        ),
-      ),
+            )
+          )
+        );
+
+        return Column(
+            children: [
+              Row(children: [
+                Text(title, style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic, color: Theme.of(context).accentColor)),
+                Spacer(),
+                FlatButton(
+                    child: Text('view all',
+                        style: TextStyle(
+                            fontSize: 14, color: Theme.of(context).accentColor)),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => eventGroupPage));
+                    })
+              ]),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(children: List<EventCard>.from(docs.map((doc) {
+                  return EventCard(Event.fromDoc(doc));
+                }))),
+              )
+            ]);
+      },
     );
   }
 }
