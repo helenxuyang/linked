@@ -312,10 +312,17 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         child: Text("Create Event",
                             style: TextStyle(fontSize: 18)),
                         onPressed: () {
+                          DateTime _startTimePlusOneMinute =
+                              _startTime.add(new Duration(minutes: 1));
                           if (_startTime.isAfter(_endTime)) {
                             Scaffold.of(context).showSnackBar(SnackBar(
                                 content: Text(
                                     'Start time must be before end time!')));
+                          } else if (_startTimePlusOneMinute
+                              .isBefore(DateTime.now())) {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                                content: Text(
+                                    'Start time must be after current time!')));
                           } else if (!_formKey.currentState.validate()) {
                             Scaffold.of(context).showSnackBar(SnackBar(
                                 content: Text('Please fill out all fields!')));
