@@ -306,21 +306,6 @@ class EventPage extends StatelessWidget {
                 editButton(context, event, userID)
               ],
             ),
-            Container(
-              width: 50,
-              child: FlatButton(
-                  splashColor: Colors.white,
-                  highlightColor: Colors.white,
-                  padding: EdgeInsets.only(left: 0, right: 4),
-                  child: Align(
-                      child: Text('Back',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.normal)),
-                      alignment: Alignment.centerLeft),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-            ),
             Text(event.title,
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             Text(
