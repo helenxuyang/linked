@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart';
-import 'package:no_probllama_app/CreateEvent.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Profile.dart';
@@ -140,8 +139,11 @@ class EventCard extends StatelessWidget {
                 child: Text(event.description, style: logisticsStyle),
                 width: MediaQuery.of(context).size.width * 0.6),
             SizedBox(height: 8),
-            Text(event.tags.map((tag) => '#' + tag).join('  '),
-                style: secondaryStyle),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: Text(event.tags.map((tag) => '#' + tag).join('  '),
+                  style: secondaryStyle),
+            ),
             SizedBox(height: 8),
             Row(children: [
               event.isVirtual && event.isLive()
@@ -296,14 +298,29 @@ class EventPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              backButton(context),
-              Spacer(),
-              // deleteButton(context, event, userID),
-              editButton(context, event, userID),
-            ]),
+          child: ListView(children: [
+            Row(
+              children: [
+                backButton(context),
+                Spacer(),
+                editButton(context, event, userID)
+              ],
+            ),
+            Container(
+              width: 50,
+              child: FlatButton(
+                  splashColor: Colors.white,
+                  highlightColor: Colors.white,
+                  padding: EdgeInsets.only(left: 0, right: 4),
+                  child: Align(
+                      child: Text('Back',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.normal)),
+                      alignment: Alignment.centerLeft),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }),
+            ),
             Text(event.title,
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             Text(
@@ -334,27 +351,19 @@ class EventPage extends StatelessWidget {
                     fontStyle: FontStyle.italic)),
             SizedBox(height: 8),
             Text('Organizer', style: subtitleStyle),
-            OrganizerChip(event.organizer),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OrganizerChip(event.organizer),
+            ),
             SizedBox(height: 8),
             Text(
-                event.maxAttendees == null
-                    ? 'Attendees (${event.attendeeIDs.length.toString()})'
-                    : 'Attendees (${event.attendeeIDs.length.toString()}/${event.maxAttendees.toString()})',
+                event.attendeeIDs.length.toString() +
+                    (event.maxAttendees == null
+                        ? ''
+                        : '/' + event.maxAttendees.toString()) +
+                    ' attendees:',
                 style: subtitleStyle),
-            StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('events')
-                    .doc(event.eventID)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Container();
-                  }
-                  DocumentSnapshot eventDoc = snapshot.data;
-                  List<String> attendeeIDs =
-                      List<String>.from(eventDoc.get('attendees'));
-                  return AttendeeChips(attendeeIDs);
-                })
+            AttendeeChips(event.attendeeIDs)
           ]),
         ),
       ),
@@ -382,8 +391,8 @@ class PersonChip extends StatelessWidget {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    Scaffold(body: SafeArea(child: ProfilePage(doc.id)))));
+                builder: (context) => Scaffold(
+                    body: SafeArea(child: ProfilePage(doc.id, true)))));
       },
     );
   }

@@ -43,7 +43,6 @@ class CurrentUserInfo with ChangeNotifier {
         .get()
         .then((snapshot) {
       if (snapshot == null || !snapshot.exists) {
-        //TODO: add to users database
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => OnboardingPage()));
       } else {
