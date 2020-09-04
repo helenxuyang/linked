@@ -288,7 +288,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                             color: Theme.of(context).accentColor,
                             textColor: Colors.white,
                             child: Text("Create Event", style: TextStyle(fontSize: 18)),
-                            onPressed: () {
+                            onPressed: () async {
                               if (_startTime.isAfter(_endTime)) {
                                 Scaffold.of(context).showSnackBar(SnackBar(
                                     content:
@@ -297,7 +297,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                 Scaffold.of(context).showSnackBar(SnackBar(
                                     content: Text('Please fill out all fields!')));
                               } else {
-                                FirebaseFirestore.instance.collection('events').add({
+                                DocumentReference doc = await FirebaseFirestore.instance.collection('events').add({
                                   'title': _title,
                                   'isVirtual': _isVirtual,
                                   'location': _location,
@@ -309,8 +309,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                   'endTime': Timestamp.fromDate(_endTime),
                                   'tags': _tags,
                                 });
-                                EventUtils.addToCalendar(_title, _location, _description,
-                                    _startTime, _endTime);
+                                DocumentSnapshot snapshot = await doc.get();
+                                EventUtils.addToCalendar(context, Event.fromDoc(snapshot));
                                 Navigator.pop(context);
                               }
                             });
