@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'Event.dart';
 import 'Login.dart';
 import 'Utils.dart';
+import 'dart:developer';
 
 class _CreateEventPageState extends State<CreateEventPage> {
   // Event fields
@@ -134,7 +135,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                           Text('Location',
                               style: Theme.of(context).textTheme.headline3),
                           TextFormField(
-                            initialValue: _location,
                             textInputAction: TextInputAction.next,
                             validator: (value) {
                               if (value.isEmpty) {
@@ -184,11 +184,13 @@ class _CreateEventPageState extends State<CreateEventPage> {
                           SizedBox(height: 12),
                           Text('Event Start Time',
                               style: Theme.of(context).textTheme.headline3),
-                          DateTimeSelections(_startTime, setStart),
+                          DateTimeSelections(
+                              _startTime, setStart, DateTimeModes.CREATE),
                           SizedBox(height: 12),
                           Text('Event End Time',
                               style: Theme.of(context).textTheme.headline3),
-                          DateTimeSelections(_endTime, setEnd),
+                          DateTimeSelections(
+                              _endTime, setEnd, DateTimeModes.CREATE),
                           SizedBox(height: 12),
                           Text('Max Attendees',
                               style: Theme.of(context).textTheme.headline3),
@@ -286,10 +288,19 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   textColor: Colors.white,
                   child: Text("Create Event", style: TextStyle(fontSize: 18)),
                   onPressed: () {
+                    DateTime _startTimePlus1Minute =
+                        _startTime.add(new Duration(minutes: 1));
+                    DateTime now = DateTime.now();
+                    log('$_startTimePlus1Minute ; $now');
                     if (_startTime.isAfter(_endTime)) {
                       Scaffold.of(context).showSnackBar(SnackBar(
                           content:
                               Text('Start time must be before end time!')));
+                    } else if (_startTimePlus1Minute.isBefore(DateTime.now())) {
+                      // prevent the creation of an event that starts before now
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text('Start time must be after current time!')));
                     } else if (!_formKey.currentState.validate()) {
                       Scaffold.of(context).showSnackBar(SnackBar(
                           content: Text('Please fill out all fields!')));
@@ -324,10 +335,13 @@ class CreateEventPage extends StatefulWidget {
   _CreateEventPageState createState() => _CreateEventPageState();
 }
 
+enum DateTimeModes { CREATE, EDIT }
+
 class DateTimeSelections extends StatefulWidget {
-  DateTimeSelections(this.init, this.setterCallback);
+  DateTimeSelections(this.init, this.setterCallback, this.mode);
   final DateTime init;
   final Function setterCallback;
+  final DateTimeModes mode;
 
   @override
   _DateTimeSelectionsState createState() => _DateTimeSelectionsState();
@@ -336,12 +350,14 @@ class DateTimeSelections extends StatefulWidget {
 class _DateTimeSelectionsState extends State<DateTimeSelections> {
   DateTime date;
   TimeOfDay time;
+  DateTimeModes mode;
 
   @override
   void initState() {
     super.initState();
     date = widget.init;
     time = TimeOfDay(hour: widget.init.hour, minute: widget.init.minute);
+    mode = widget.mode;
   }
 
   @override
@@ -362,10 +378,11 @@ class _DateTimeSelectionsState extends State<DateTimeSelections> {
             ]),
             onPressed: () async {
               DateTime today = DateTime.now();
+              DateTime earlierDate = today.isBefore(date) ? today : date;
               final DateTime selection = await showDatePicker(
                   context: context,
                   initialDate: date,
-                  firstDate: today,
+                  firstDate: mode == DateTimeModes.EDIT ? earlierDate : today,
                   lastDate: today.add(new Duration(days: 50)));
               if (selection != null) {
                 date = selection;

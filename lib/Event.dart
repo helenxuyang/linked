@@ -221,7 +221,50 @@ class EventPage extends StatelessWidget {
     );
   }
 
-  Widget editButton(context, Event event, userID) {
+  Widget deleteButton(context, Event event, String userID) {
+    /** Not finished, fails to pop to the desired page, do not use until fixed */
+    return event.organizer == userID
+        ? Container(
+            width: 70,
+            child: FlatButton(
+                splashColor: Colors.white,
+                highlightColor: Colors.white,
+                padding: EdgeInsets.only(left: 4, right: 8),
+                child: Text('Delete',
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal)),
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text(
+                              "Are you sure you want to delete ${event.title}"),
+                          content: Row(children: [
+                            FlatButton(
+                                onPressed: () {
+                                  FirebaseFirestore.instance
+                                      .collection('events')
+                                      .doc(event.eventID)
+                                      .delete();
+                                  log("event ${event.eventID} deleted");
+                                  Navigator.popUntil(
+                                      context, ModalRoute.withName('/home'));
+                                },
+                                child: Text("Yes")),
+                            FlatButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text("No"))
+                          ]),
+                        );
+                      });
+                }))
+        : Container();
+  }
+
+  Widget editButton(context, Event event, String userID) {
     return event.organizer == userID
         ? Container(
             width: 50,
@@ -258,6 +301,7 @@ class EventPage extends StatelessWidget {
             Row(children: [
               backButton(context),
               Spacer(),
+              // deleteButton(context, event, userID),
               editButton(context, event, userID),
             ]),
             Text(event.title,
@@ -417,7 +461,6 @@ class ShareButton extends StatelessWidget {
                     DateFormat('jm').format(event.endTime);
             String dateTimeLine =
                 "Date & Time: " + startDateStr + " to " + endDateStr + "\n";
-            //"Date & Time: ${event.startTime} to ${event.endTime}\n"
             String shareString = "Event: ${event.title} \n" +
                 "Description: ${event.description} \n" +
                 "$mediumLine" +

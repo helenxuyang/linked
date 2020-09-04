@@ -6,11 +6,14 @@ import 'package:provider/provider.dart';
 import 'Event.dart';
 import 'Login.dart';
 import 'Utils.dart';
+import 'CreateEvent.dart';
+import 'dart:developer';
 
 class _EditEventPageState extends State<EditEventPage> {
   // misc
-  TextEditingController _titleController;
-  TextEditingController _locationController;
+  // TextEditingController _titleController;
+  // TextEditingController _locationController;
+  TextEditingController _maxAttendeeNumController;
 
   _EditEventPageState(this._origEvent);
   // Event fields
@@ -33,16 +36,23 @@ class _EditEventPageState extends State<EditEventPage> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: _origEvent.title);
-    _locationController = TextEditingController(text: _origEvent.location);
-
+    log("origEvent: ${_origEvent.maxAttendees}");
+    // _titleController = TextEditingController(text: _origEvent.title);
+    // _locationController = TextEditingController(text: _origEvent.location);
+    _maxAttendeeNumController = TextEditingController(
+        text: _origEvent.maxAttendees == null
+            ? "10"
+            : "${_origEvent.maxAttendees}");
     _title = _origEvent.title;
+    _location = _origEvent.location;
     _type = _origEvent.isVirtual ? Event.appOptions[0] : Event.appOptions[1];
     _isVirtual = _origEvent.isVirtual;
     _description = _origEvent.description;
     _startTime = _origEvent.startTime;
     _endTime = _origEvent.endTime;
     _maxAttendees = _origEvent.maxAttendees;
+    _tags = _origEvent.tags;
+    noMax = _origEvent.maxAttendees == null;
     _focusNode = FocusNode();
   }
 
@@ -99,7 +109,8 @@ class _EditEventPageState extends State<EditEventPage> {
                               style: Theme.of(context).textTheme.headline3),
                           TextFormField(
                             focusNode: _focusNode,
-                            controller: _titleController,
+                            initialValue: _title,
+                            // controller: _titleController,
                             textInputAction: TextInputAction.next,
                             decoration: Utils.textFieldDecoration(
                                 hint: 'PowerPoint Palooza Spectacular'),
@@ -143,28 +154,24 @@ class _EditEventPageState extends State<EditEventPage> {
                           Text('Location',
                               style: Theme.of(context).textTheme.headline3),
                           TextFormField(
-                            initialValue: _location,
-                            controller: _locationController,
-                            textInputAction: TextInputAction.next,
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return 'Please enter a location.';
-                              }
-                              return null;
-                            },
-                            onChanged: (value) {
-                              setState(() {
-                                _location = value;
-                              });
-                            },
-                            onFieldSubmitted: (value) {
-                              FocusScope.of(context).nextFocus();
-                            },
-                            decoration: Utils.textFieldDecoration(
-                                hint: _isVirtual
-                                    ? 'Paste Zoom/Google Meet link'
-                                    : 'Arts Quad'),
-                          ),
+                              initialValue: _location,
+                              // controller: _locationController,
+                              textInputAction: TextInputAction.next,
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return 'Please enter a location.';
+                                }
+                                return null;
+                              },
+                              onChanged: (value) {
+                                setState(() {
+                                  _location = value;
+                                });
+                              },
+                              onFieldSubmitted: (value) {
+                                FocusScope.of(context).nextFocus();
+                              },
+                              decoration: Utils.textFieldDecoration()),
                           SizedBox(height: 12),
                           Text("Description",
                               style: Theme.of(context).textTheme.headline3),
@@ -195,11 +202,13 @@ class _EditEventPageState extends State<EditEventPage> {
                           SizedBox(height: 12),
                           Text('Event Start Time',
                               style: Theme.of(context).textTheme.headline3),
-                          DateTimeSelections(_startTime, setStart),
+                          DateTimeSelections(
+                              _startTime, setStart, DateTimeModes.EDIT),
                           SizedBox(height: 12),
                           Text('Event End Time',
                               style: Theme.of(context).textTheme.headline3),
-                          DateTimeSelections(_endTime, setEnd),
+                          DateTimeSelections(
+                              _endTime, setEnd, DateTimeModes.EDIT),
                           SizedBox(height: 12),
                           Text('Max Attendees',
                               style: Theme.of(context).textTheme.headline3),
@@ -213,6 +222,7 @@ class _EditEventPageState extends State<EditEventPage> {
                                 setState(() {
                                   noMax = true;
                                   _maxAttendees = null;
+                                  log("max Attendees = $_maxAttendees");
                                 });
                               },
                             ),
@@ -224,7 +234,7 @@ class _EditEventPageState extends State<EditEventPage> {
                               SizedBox(width: 8),
                               Expanded(
                                 child: TextFormField(
-                                  initialValue: '10',
+                                  controller: _maxAttendeeNumController,
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly
@@ -243,7 +253,10 @@ class _EditEventPageState extends State<EditEventPage> {
                                   decoration: Utils.textFieldDecoration(),
                                   onChanged: (value) {
                                     setState(() {
-                                      _maxAttendees = int.parse(value);
+                                      noMax = false;
+                                      _maxAttendees = int.tryParse(
+                                          _maxAttendeeNumController.text);
+                                      log("${_maxAttendeeNumController.text}");
                                     });
                                   },
                                 ),
@@ -255,7 +268,9 @@ class _EditEventPageState extends State<EditEventPage> {
                               onChanged: (value) {
                                 setState(() {
                                   noMax = false;
-                                  _maxAttendees = null;
+                                  log("$value ; ${_maxAttendeeNumController.text}");
+                                  _maxAttendees = int.tryParse(
+                                      _maxAttendeeNumController.text);
                                 });
                               },
                             ),
@@ -295,7 +310,7 @@ class _EditEventPageState extends State<EditEventPage> {
               return FlatButton(
                   color: Theme.of(context).accentColor,
                   textColor: Colors.white,
-                  child: Text("Create Event", style: TextStyle(fontSize: 18)),
+                  child: Text("Edit Event", style: TextStyle(fontSize: 18)),
                   onPressed: () {
                     if (_startTime.isAfter(_endTime)) {
                       Scaffold.of(context).showSnackBar(SnackBar(
@@ -309,7 +324,7 @@ class _EditEventPageState extends State<EditEventPage> {
                           .collection('events')
                           .doc(_origEvent.eventID)
                           .set({
-                        'title': _titleController.text,
+                        'title': _title,
                         'isVirtual': _isVirtual,
                         'location': _location,
                         'description': _description,
@@ -320,6 +335,7 @@ class _EditEventPageState extends State<EditEventPage> {
                         'endTime': Timestamp.fromDate(_endTime),
                         'tags': _tags,
                       });
+                      log("max Attendees = $_maxAttendees");
                       EventUtils.addToCalendar(_title, _location, _description,
                           _startTime, _endTime);
                       Navigator.pop(context);
@@ -338,77 +354,4 @@ class EditEventPage extends StatefulWidget {
   final Event _origEvent;
   @override
   _EditEventPageState createState() => _EditEventPageState(_origEvent);
-}
-
-class DateTimeSelections extends StatefulWidget {
-  DateTimeSelections(this.init, this.setterCallback);
-  final DateTime init;
-  final Function setterCallback;
-
-  @override
-  _DateTimeSelectionsState createState() => _DateTimeSelectionsState();
-}
-
-class _DateTimeSelectionsState extends State<DateTimeSelections> {
-  DateTime date;
-  TimeOfDay time;
-
-  @override
-  void initState() {
-    super.initState();
-    date = widget.init;
-    time = TimeOfDay(hour: widget.init.hour, minute: widget.init.minute);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        FlatButton(
-            padding: EdgeInsets.only(left: 0),
-            child: Row(children: [
-              Icon(Icons.calendar_today),
-              SizedBox(width: 8),
-              Text(
-                  DateFormat('E').format(date) +
-                      '. ' +
-                      DateFormat('MMMMd').format(date),
-                  style: Theme.of(context).textTheme.bodyText1),
-              Icon(Icons.arrow_drop_down),
-            ]),
-            onPressed: () async {
-              DateTime today = DateTime.now();
-              final DateTime selection = await showDatePicker(
-                  context: context,
-                  initialDate: date,
-                  firstDate: today,
-                  lastDate: today.add(new Duration(days: 50)));
-              if (selection != null) {
-                date = selection;
-                widget.setterCallback(selection, time);
-              }
-            }),
-        FlatButton(
-          padding: EdgeInsets.only(left: 0),
-          child: Row(children: [
-            Icon(Icons.access_time),
-            SizedBox(width: 8),
-            Text(
-                DateFormat('jm')
-                    .format(DateTime(1, 1, 1, time.hour, time.minute)),
-                style: Theme.of(context).textTheme.bodyText1),
-            Icon(Icons.arrow_drop_down)
-          ]),
-          onPressed: () async {
-            final TimeOfDay selection =
-                await showTimePicker(context: context, initialTime: time);
-            if (selection != null) {
-              time = selection;
-              widget.setterCallback(date, selection);
-            }
-          },
-        )
-      ]),
-    ]);
-  }
 }
