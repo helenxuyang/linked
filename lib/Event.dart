@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
@@ -9,8 +10,10 @@ import 'Profile.dart';
 import 'EditEvent.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
-import 'package:add_2_calendar/add_2_calendar.dart' as cal;
+import 'package:googleapis/calendar/v3.dart' as cal;
 import 'dart:developer';
+import "package:http/http.dart" as http;
+import "package:googleapis_auth/auth_io.dart";
 
 class Event {
   static final List<String> appOptions = ['Virtual', 'In Person'];
@@ -614,18 +617,12 @@ class _RSVPButtonState extends State<RSVPButton> {
                       : () async {
                           disable();
                           addSignUp(userID, widget.eventID);
-                          FirebaseFirestore.instance
+                          DocumentSnapshot doc = await FirebaseFirestore
+                              .instance
                               .collection('events')
                               .doc(widget.eventID)
-                              .get()
-                              .then((doc) {
-                            EventUtils.addToCalendar(
-                                doc.get('title'),
-                                doc.get('location'),
-                                doc.get('description'),
-                                doc.get('startTime').toDate(),
-                                doc.get('endTime').toDate());
-                          });
+                              .get();
+                          EventUtils.addToCalendar(context, Event.fromDoc(doc));
                         });
         });
   }
@@ -647,22 +644,32 @@ class EventUtils {
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
   }
 
-  static addToCalendar(String title, String location, String description,
-      DateTime startTime, DateTime endTime) async {
-    cal.Event calEvent = cal.Event(
-      title: title,
-      location: location,
-      description: description,
-      startDate: startTime,
-      endDate: endTime,
-    );
-    String timezone;
-    try {
-      timezone = await FlutterNativeTimezone.getLocalTimezone();
-      calEvent.timeZone = timezone;
-    } on PlatformException {
-      timezone = null;
+  static addToCalendar(BuildContext context, Event event) async {
+    var id = new ClientId(
+        "44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com",
+        "...");
+    var scopes = [cal.CalendarApi.CalendarScope];
+
+    void prompt(String url) async {
+      if (await canLaunch(url)) {
+        await launch(
+          url,
+          forceSafariVC: false,
+          forceWebView: false,
+          headers: <String, String>{'my_header_key': 'my_header_value'},
+        );
+      } else {
+        throw 'Could not launch $url';
+      }
     }
-    cal.Add2Calendar.addEvent2Cal(calEvent);
+
+    var client = new http.Client();
+    obtainAccessCredentialsViaUserConsent(id, scopes, client, prompt)
+        .then((AccessCredentials credentials) async {
+      cal.CalendarApi calAPI = cal.CalendarApi(client);
+      String currentUser = FirebaseAuth.instance.currentUser.email;
+      cal.Calendar googleCalendar = await calAPI.calendars.get(currentUser);
+      client.close();
+    });
   }
 }
