@@ -289,11 +289,15 @@ class EventPage extends StatelessWidget {
         : Container();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget eventPageScaffold(
+      BuildContext context, AsyncSnapshot<dynamic> snapshot) {
     String userID = Provider.of<CurrentUserInfo>(context).id;
     TextStyle subtitleStyle =
         TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+    if (!snapshot.hasData) {
+      return Container();
+    }
+    Event event = Event.fromDoc(snapshot.data);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -353,6 +357,16 @@ class EventPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('events')
+            .doc(event.eventID)
+            .snapshots(),
+        builder: eventPageScaffold);
   }
 }
 
