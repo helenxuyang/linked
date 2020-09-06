@@ -622,7 +622,7 @@ class _RSVPButtonState extends State<RSVPButton> {
                     .collection('events')
                     .doc(widget.eventID)
                     .get();
-                EventUtils.addToCalendar(context, Event.fromDoc(doc));
+                EventUtils.addToCalendar(context, Event.fromDoc(doc), false);
               });
         });
   }
@@ -644,7 +644,8 @@ class EventUtils {
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
   }
 
-  static addToCalendar(BuildContext context, Event event) async {
+  static Future<String> addToCalendar(BuildContext context, Event event, bool createLink) async {
+    String eventID;
     var id = new ClientId(
         "44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com",
         "");
@@ -665,7 +666,8 @@ class EventUtils {
 
     String timeZone = await FlutterNativeTimezone.getLocalTimezone();
 
-    clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
+    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
+
       cal.CalendarApi calAPI = cal.CalendarApi(client);
       String currentUser = FirebaseAuth.instance.currentUser.email;
       cal.Calendar googleCalendar = await calAPI.calendars.get(currentUser);
@@ -681,20 +683,26 @@ class EventUtils {
           'dateTime': event.endTime.toString(),
           'timeZone': timeZone
         },
-        'conferenceData': {
-          'createRequest': {
-            'conferenceSolutionKey': {
-              'type': 'eventHangout'
-            }
-          }
-        }
       });
 
-      calAPI.events.insert(calEvent, currentUser, conferenceDataVersion: 1).then((createdEvent) async {
+      if (createLink) {
+        calEvent.conferenceData = cal.ConferenceData.fromJson({
+          'createRequest': {
+            'requestId': 'test'
+          }
+        });
+      }
+      else {
+        calEvent.location = event.location;
+      }
+      await calAPI.events.insert(calEvent, currentUser, conferenceDataVersion: 1).then((createdEvent) async {
         if (createdEvent.status == 'confirmed') {
           print('confirmed');
 
           String calendarURL = createdEvent.htmlLink;
+          if (createLink) {
+            FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'location': createdEvent.conferenceData.entryPoints[0].uri});
+          }
           if (await canLaunch(calendarURL)) {
             await launch(
               calendarURL,
@@ -709,8 +717,11 @@ class EventUtils {
         else {
           print('error inserting event');
         }
+        client.close();
+        eventID = createdEvent.id;
       });
-      client.close();
     });
+    print("id: " + eventID);
+    return eventID;
   }
 }

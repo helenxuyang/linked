@@ -327,8 +327,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                       'tags': _tags,
                                     });
                                     DocumentSnapshot snapshot = await doc.get();
-                                    EventUtils.addToCalendar(
-                                        context, Event.fromDoc(snapshot));
+                                    EventUtils.addToCalendar(context, Event.fromDoc(snapshot), _isVirtual);
                                     Navigator.pop(context);
                                   }
                                 });
