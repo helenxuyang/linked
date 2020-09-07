@@ -644,84 +644,23 @@ class EventUtils {
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
   }
 
+  static Future<String> loadSecret() async {
+    return await rootBundle.loadString('secrets/client_secret.json');
+  }
+
   static Future<String> addToCalendar(BuildContext context, Event event, bool createLink) async {
-    String eventID;
-    var id = new ClientId(
-        "44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com",
-        "");
+    var serviceSecret = await loadSecret();
+    log(serviceSecret);
+    final serviceAccountCred = new ServiceAccountCredentials.fromJson(serviceSecret);
     var scopes = [cal.CalendarApi.CalendarScope];
 
-    void prompt(String url) async {
-      if (await canLaunch(url)) {
-        await launch(
-          url,
-          forceSafariVC: false,
-          forceWebView: false,
-          headers: <String, String>{'my_header_key': 'my_header_value'},
-        );
-      } else {
-        throw 'Could not launch $url';
-      }
+    void calendarActions(AuthClient client){
+      log(client.toString());
+      client.close();
+      log("happy programmer");
     }
 
-    String timeZone = await FlutterNativeTimezone.getLocalTimezone();
-
-    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
-
-      cal.CalendarApi calAPI = cal.CalendarApi(client);
-      String currentUser = FirebaseAuth.instance.currentUser.email;
-      cal.Calendar googleCalendar = await calAPI.calendars.get(currentUser);
-
-      cal.Event calEvent = cal.Event.fromJson({
-        'summary': event.title,
-        'description': event.description,
-        'start': {
-          'dateTime': event.startTime.toString(),
-          'timeZone': timeZone
-        },
-        'end': {
-          'dateTime': event.endTime.toString(),
-          'timeZone': timeZone
-        },
-      });
-
-      if (createLink) {
-        calEvent.conferenceData = cal.ConferenceData.fromJson({
-          'createRequest': {
-            'requestId': 'test'
-          }
-        });
-      }
-      else {
-        calEvent.location = event.location;
-      }
-      await calAPI.events.insert(calEvent, currentUser, conferenceDataVersion: 1).then((createdEvent) async {
-        if (createdEvent.status == 'confirmed') {
-          print('confirmed');
-
-          String calendarURL = createdEvent.htmlLink;
-          if (createLink) {
-            FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'location': createdEvent.conferenceData.entryPoints[0].uri});
-          }
-          if (await canLaunch(calendarURL)) {
-            await launch(
-              calendarURL,
-              forceSafariVC: false,
-              forceWebView: false,
-              headers: <String, String>{'my_header_key': 'my_header_value'},
-            );
-          } else {
-            throw 'Could not launch $calendarURL';
-          }
-        }
-        else {
-          print('error inserting event');
-        }
-        client.close();
-        eventID = createdEvent.id;
-      });
-    });
-    print("id: " + eventID);
-    return eventID;
+    clientViaServiceAccount(serviceAccountCred, scopes).then(calendarActions);
+    return "0";
   }
 }

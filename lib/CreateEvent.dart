@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'Event.dart';
 import 'Login.dart';
 import 'Utils.dart';
-import 'dart:developer';
 
 class _CreateEventPageState extends State<CreateEventPage> {
   // Event fields
