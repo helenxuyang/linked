@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
 import 'package:googleapis/calendar/v3.dart' as cal;
 import 'dart:developer';
+import 'dart:convert';
 import "package:http/http.dart" as http;
 import "package:googleapis_auth/auth_io.dart";
 
@@ -376,6 +377,37 @@ class EventPage extends StatelessWidget {
 class PersonChip extends StatelessWidget {
   PersonChip(this.doc);
   final DocumentSnapshot doc;
+
+  String getImgLink() {
+    try {
+      return doc.get('photoURL');
+    } catch(Exception) {
+      return "https://www.thecollegefix.com/wp-content/uploads/2013/12/CornellBearMascot.Mhaithica.Flickr.jpg";
+    }
+  }
+
+  String getPersonName(){
+    try {
+      return doc.get('firstName') + ' ' + doc.get('lastName');
+    }
+    catch(Exception) {
+      return "Deleted user";
+    }
+  }
+
+  Future<bool> isDeleted() async {
+    try {
+      DocumentSnapshot x = await FirebaseFirestore.instance.collection('users').doc(doc.id).get();
+      if (x.exists){
+        return false;
+      } else {
+        return true;
+      }
+    } catch(Exception) {
+      return true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return InputChip(
@@ -384,12 +416,13 @@ class PersonChip extends StatelessWidget {
           side: BorderSide(color: Theme.of(context).accentColor, width: 1)),
       avatar: CircleAvatar(
           child: ClipOval(
-              child: Image.network(
-                doc.get('photoURL'),
-              ))),
-      label: Text(doc.get('firstName') + ' ' + doc.get('lastName'),
+              child: Image.network(getImgLink()))),
+      label: Text(getPersonName(),
           style: TextStyle(color: Theme.of(context).accentColor)),
-      onPressed: () {
+      onPressed: () async {
+        await isDeleted() ?
+        Scaffold.of(context).showSnackBar(
+            SnackBar(content: Text("Sorry, this user was deleted"))) :
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -653,14 +686,72 @@ class EventUtils {
     log(serviceSecret);
     final serviceAccountCred = new ServiceAccountCredentials.fromJson(serviceSecret);
     var scopes = [cal.CalendarApi.CalendarScope];
+    String currentUser = FirebaseAuth.instance.currentUser.email;
+    Map<String, dynamic> serviceAcctJson = jsonDecode(serviceSecret);
+    String serviceEmail = serviceAcctJson['client_email'];
+    String timeZone = await FlutterNativeTimezone.getLocalTimezone();
 
-    void calendarActions(AuthClient client){
+    // TODO: rename fn haha
+    Future<String> launchBoi(createdEvent) async {
+      if(createdEvent.status == 'confirmed') {
+        log('confirmed');
+
+        String calendarURL = createdEvent.htmlLink;
+        if(createLink){
+          log(createdEvent.conferenceData.entryPoints.toString());
+          // TODO: allow the user to decide between meeting link generation from us or they can paste it in
+          FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'location': createdEvent.conferenceData.entryPoints[0].uri});
+        }
+        if (await canLaunch(calendarURL)) {
+          await launch(
+              calendarURL,
+              forceSafariVC: false,
+              forceWebView: false,
+              headers: <String, String>{'my_header_key': 'my_header_value'}
+          );
+        } else {
+          throw 'Could not launch $calendarURL';
+        }
+      } else {
+        log('error inserting event');
+      }
+      return createdEvent.id;
+    }
+
+    void calendarActions(AuthClient client) async {
       log(client.toString());
+      cal.CalendarApi calAPI = cal.CalendarApi(client);
+      cal.Event calEvent = cal.Event.fromJson({
+        'summary': event.title,
+        'description': event.description,
+        'start': {
+          'dateTime': event.startTime.toString(),
+          'timeZone': timeZone,
+        },
+        'end': {
+          'dateTime': event.endTime.toString(),
+          'timeZone': timeZone,
+        },
+      });
+
+      if(createLink) {
+        calEvent.conferenceData = cal.ConferenceData.fromJson({
+          'createRequest': {
+            'requestId':'test'
+          }
+        });
+      }
+      else {
+        calEvent.location = event.location;
+      }
+      String calEventID = await calAPI.events.insert(calEvent, serviceEmail, conferenceDataVersion: 1).then(launchBoi);
       client.close();
-      log("happy programmer");
+      log("cal event id: $calEventID");
     }
 
     clientViaServiceAccount(serviceAccountCred, scopes).then(calendarActions);
-    return "0";
+    return event.eventID;
   }
 }
+
+
