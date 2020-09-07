@@ -655,7 +655,7 @@ class _RSVPButtonState extends State<RSVPButton> {
                     .collection('events')
                     .doc(widget.eventID)
                     .get();
-                EventUtils.addToCalendar(context, Event.fromDoc(doc), false);
+                EventUtils.addToCalendar(userID, context, Event.fromDoc(doc), false);
               });
         });
   }
@@ -681,12 +681,11 @@ class EventUtils {
     return await rootBundle.loadString('secrets/client_secret.json');
   }
 
-  static Future<String> addToCalendar(BuildContext context, Event event, bool createLink) async {
+  static Future<String> addToCalendar(String currentUserId, BuildContext context, Event event, bool createLink) async {
     var serviceSecret = await loadSecret();
-    log(serviceSecret);
     final serviceAccountCred = new ServiceAccountCredentials.fromJson(serviceSecret);
     var scopes = [cal.CalendarApi.CalendarScope];
-    String currentUser = FirebaseAuth.instance.currentUser.email;
+    String currentUserEmail = FirebaseAuth.instance.currentUser.email;
     Map<String, dynamic> serviceAcctJson = jsonDecode(serviceSecret);
     String serviceEmail = serviceAcctJson['client_email'];
     String timeZone = await FlutterNativeTimezone.getLocalTimezone();
@@ -732,6 +731,9 @@ class EventUtils {
           'dateTime': event.endTime.toString(),
           'timeZone': timeZone,
         },
+        'attendees': [
+          {'email': currentUserEmail}
+        ]
       });
 
       if(createLink) {

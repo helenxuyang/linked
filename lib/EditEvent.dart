@@ -337,7 +337,7 @@ class _EditEventPageState extends State<EditEventPage> {
                       });
                       Event modifiedEvent = new Event(_origEvent.eventID, _title, _isVirtual, _location, _description, _organizerID, _startTime, _endTime, _origEvent.attendeeIDs, _maxAttendees, _tags);
                       log("max Attendees = $_maxAttendees");
-                      EventUtils.addToCalendar(context, modifiedEvent, _isVirtual);
+                      EventUtils.addToCalendar(_organizerID, context, modifiedEvent, _isVirtual);
                       Navigator.pop(context);
                     }
                   });
