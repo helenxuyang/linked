@@ -731,9 +731,9 @@ class EventUtils {
           'dateTime': event.endTime.toString(),
           'timeZone': timeZone,
         },
-        'attendees': [
-          {'email': currentUserEmail}
-        ]
+//        'attendees': [
+//          {'email': currentUserEmail}
+//        ]
       });
 
       if(createLink) {
