@@ -683,6 +683,7 @@ class EventUtils {
 
   static Future<String> addToCalendar(String currentUserId, BuildContext context, Event event, bool createLink) async {
     var serviceSecret = await loadSecret();
+    log(serviceSecret);
     final serviceAccountCred = new ServiceAccountCredentials.fromJson(serviceSecret);
     var scopes = [cal.CalendarApi.CalendarScope];
     String currentUserEmail = FirebaseAuth.instance.currentUser.email;
@@ -731,9 +732,9 @@ class EventUtils {
           'dateTime': event.endTime.toString(),
           'timeZone': timeZone,
         },
-//        'attendees': [
-//          {'email': currentUserEmail}
-//        ]
+        'attendees': [
+          {'email': currentUserEmail}
+        ]
       });
 
       if(createLink) {
