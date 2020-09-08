@@ -645,16 +645,11 @@ class EventUtils {
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
   }
 
-  // returns Google Calendar event
-  static Future<cal.Event> createCalEvent(BuildContext context, Event event, bool createLink) async {
-    DocumentSnapshot credsDoc = await FirebaseFirestore.instance.collection('credentials').doc('creds').get();
+  // Debug method to help us get accessCredential fields via user consent
+  // (intended for no.probllama acct)
+  static Future<AccessCredentials> promptBoi() async {
     var scopes = [cal.CalendarApi.CalendarScope];
-
-    String timeZone = await FlutterNativeTimezone.getLocalTimezone();
-
-    http.Client httpClient = http.Client();
-    String accessToken = credsDoc.get('accessToken');
-    String refreshToken = credsDoc.get('refreshToken');
+    var id = new ClientId("44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com", "");
 
     void prompt(String url) async {
       if (await canLaunch(url)) {
@@ -669,16 +664,68 @@ class EventUtils {
       }
     }
 
-      var id = new ClientId("44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com", "");
-      DateTime expiry = DateTime.utc(2020, 9,8, 17, 23, 03);
-      log(Timestamp.fromDate(expiry).toString() );
-      AuthClient client = authenticatedClient(httpClient, AccessCredentials(new AccessToken("Bearer", accessToken, expiry), refreshToken, scopes));
+    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
+      AccessCredentials creds = client.credentials;
+      String currentAccessToken = creds.accessToken.data;
+      String currentRefreshToken = creds.refreshToken;
+      DateTime currentExpiry = creds.accessToken.expiry;
+      log("accessToken: $currentAccessToken");
+      log("refreshToken: $currentRefreshToken");
+      log("expiry (utc datetime): ${currentExpiry.toString()}");
+      DocumentReference credsDocRef = FirebaseFirestore.instance.collection('credentials').doc('creds');
+      credsDocRef.update({'accessToken': currentAccessToken});
+      credsDocRef.update({'refreshToken': currentRefreshToken});
+      credsDocRef.update({'expiry': Timestamp.fromDate(currentExpiry)});
+    });
+  }
 
-//    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
-//      log(client.credentials.accessToken.data);
-//      log(Timestamp.fromDate(client.credentials.accessToken.expiry).toString());
-//      log(client.credentials.refreshToken);
-//      log(client.credentials.accessToken.type);
+  // Obtain our service account's accessCredentials.
+  static Future<AccessCredentials> getCredentials() async {
+    var scopes = [cal.CalendarApi.CalendarScope];
+    DocumentSnapshot credsDoc = await FirebaseFirestore.instance.collection('credentials').doc('creds').get();
+    String accessToken = credsDoc.get('accessToken');
+    String refreshToken = credsDoc.get('refreshToken');
+    DateTime expiry = credsDoc.get("expiry").toDate();
+    print("===========================");
+    if(!expiry.isUtc){
+      expiry = expiry.add(expiry.timeZoneOffset);
+      expiry = DateTime.utc(expiry.year, expiry.month, expiry.day, expiry.hour, expiry.minute, expiry.second);
+    }
+    print(expiry.toString());
+    expiry = expiry.toUtc();
+    AccessToken token = new AccessToken("Bearer", accessToken, expiry);
+    return AccessCredentials(token,refreshToken, scopes);
+  }
+  // store updated credentials in Firebase if changed during use
+  static void refreshCredentials(AccessCredentials cred) async {
+    DocumentReference credsDocRef = FirebaseFirestore.instance.collection('credentials').doc('creds');
+    DocumentSnapshot credsDoc = await credsDocRef.get();
+    String firebaseAccessToken = credsDoc.get("accessToken");
+    String firebaseRefreshToken = credsDoc.get('refreshToken');
+    DateTime firebaseExpiry = credsDoc.get("expiry").toDate().toUTC();
+    String currentAccessToken = cred.accessToken.data;
+    String currentRefreshToken = cred.refreshToken;
+    DateTime currentExpiry = cred.accessToken.expiry;
+    if( currentAccessToken != firebaseAccessToken){
+      credsDocRef.update({'accessToken': currentAccessToken});
+    }
+    if( currentRefreshToken != firebaseRefreshToken){
+      credsDocRef.update({'refreshToken': currentRefreshToken});
+    }
+    if( currentExpiry != firebaseExpiry){
+      credsDocRef.update({'expiry': Timestamp.fromDate(currentExpiry)});
+    }
+
+  }
+
+  // returns Google Calendar event
+  static Future<cal.Event> createCalEvent(BuildContext context, Event event, bool createLink) async {
+    String timeZone = await FlutterNativeTimezone.getLocalTimezone();
+    promptBoi();
+    http.Client httpClient = http.Client();
+    AccessCredentials credentials = await getCredentials();
+    AuthClient client = authenticatedClient(httpClient, credentials);
+
     cal.CalendarApi calAPI = cal.CalendarApi(client);
     String calEmail = "no.probllama.linked@gmail.com";
     cal.Calendar googleCalendar = await calAPI.calendars.get(calEmail);
@@ -735,21 +782,19 @@ class EventUtils {
         print('error inserting event');
       }
       client.close();
+      //refreshCredentials(credentials);
     });
       return calEvent;
-//    });
+
   }
 
   static void addMeToCalEvent(String eventID) async {
-    DocumentSnapshot credsDoc = await FirebaseFirestore.instance.collection('credentials').doc('creds').get();
-    var scopes = [cal.CalendarApi.CalendarScope];
-    http.Client httpClient = http.Client();
-    String accessToken = credsDoc.get('accessToken');
-    String refreshToken = credsDoc.get('refreshToken');
-    DateTime expiration = new DateTime.utc(2020, 9, 8, 2, 20, 0, 0, 0);
-    AuthClient clientAlt = authenticatedClient(httpClient, AccessCredentials(new AccessToken("Bearer", accessToken, expiration), refreshToken, scopes));
 
-    cal.CalendarApi calAPI = cal.CalendarApi(clientAlt);
+    http.Client httpClient = http.Client();
+    AccessCredentials credentials = await getCredentials();
+    AuthClient client = authenticatedClient(httpClient, credentials);
+
+    cal.CalendarApi calAPI = cal.CalendarApi(client);
     String calEmail = "no.probllama.linked@gmail.com";
     cal.Calendar googleCalendar = await calAPI.calendars.get(calEmail);
     String userEmail = FirebaseAuth.instance.currentUser.email;
@@ -758,6 +803,7 @@ class EventUtils {
     calEvent.attendees.add(cal.EventAttendee.fromJson({
       'email': userEmail
     }));
+    refreshCredentials(credentials);
   }
 }
 
