@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +19,7 @@ class Event {
 
   Event(
       this.eventID,
+      this.calEventID,
       this.title,
       this.isVirtual,
       this.location,
@@ -33,6 +33,7 @@ class Event {
 
   Event.fromDoc(DocumentSnapshot doc)
       : eventID = doc.id,
+        calEventID = doc.get('calEventID'),
         title = doc.get('title'),
         isVirtual = doc.get('isVirtual'),
         location = doc.get('location'),
@@ -45,6 +46,7 @@ class Event {
         tags = List<String>.from(doc.get('tags'));
 
   final String eventID;
+  final String calEventID;
   final String title;
   final bool isVirtual;
   final String location;
@@ -151,7 +153,7 @@ class EventCard extends StatelessWidget {
             Row(children: [
               event.isVirtual && event.isLive()
                   ? JoinButton(event.location)
-                  : RSVPButton(event.eventID),
+                  : RSVPButton(event),
               SizedBox(width: 16),
               ShareButton(event)
             ])
@@ -328,7 +330,7 @@ class EventPage extends StatelessWidget {
                 style: TextStyle(fontSize: 16)),
             SizedBox(height: 8),
             Row(children: [
-              Expanded(child: RSVPButton(event.eventID)),
+              Expanded(child: RSVPButton(event)),
               SizedBox(width: 16),
               Expanded(child: ShareButton(event))
             ]),
@@ -515,8 +517,8 @@ class JoinButton extends StatelessWidget {
 }
 
 class RSVPButton extends StatefulWidget {
-  RSVPButton(this.eventID);
-  final String eventID;
+  RSVPButton(this.event);
+  final Event event;
 
   @override
   _RSVPButtonState createState() => _RSVPButtonState();
@@ -587,9 +589,8 @@ class _RSVPButtonState extends State<RSVPButton> {
           }
           DocumentSnapshot userDoc = snapshot.data;
           bool signedUp =
-          List<String>.from(userDoc.get('events')).contains(widget.eventID);
-          return signedUp
-              ? FlatButton(
+          List<String>.from(userDoc.get('events')).contains(widget.event.eventID);
+          return signedUp ? FlatButton(
               color: Theme.of(context).accentColor,
               disabledColor: Colors.transparent,
               textColor: Colors.white,
@@ -605,7 +606,7 @@ class _RSVPButtonState extends State<RSVPButton> {
                   ? null
                   : () {
                 disable();
-                removeSignUp(userID, widget.eventID);
+                removeSignUp(userID, widget.event.eventID);
               })
               : FlatButton(
               color: Theme.of(context).accentColor,
@@ -616,13 +617,13 @@ class _RSVPButtonState extends State<RSVPButton> {
                   ? null
                   : () async {
                 disable();
-                addSignUp(userID, widget.eventID);
+                addSignUp(userID, widget.event.eventID);
                 DocumentSnapshot doc = await FirebaseFirestore
                     .instance
                     .collection('events')
-                    .doc(widget.eventID)
+                    .doc(widget.event.eventID)
                     .get();
-                EventUtils.addToCalendar(context, Event.fromDoc(doc), false);
+                EventUtils.addMeToCalEvent(widget.event.calEventID);
               });
         });
   }
@@ -644,84 +645,102 @@ class EventUtils {
         .then((doc) => List<String>.from(doc.get('events')).contains(eventID));
   }
 
-  static Future<String> addToCalendar(BuildContext context, Event event, bool createLink) async {
-    String eventID;
-    var id = new ClientId(
-        "44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com",
-        "");
+  // returns Google Calendar event
+  static Future<cal.Event> createCalEvent(BuildContext context, Event event, bool createLink) async {
+    DocumentSnapshot credsDoc = await FirebaseFirestore.instance.collection('credentials').doc('creds').get();
     var scopes = [cal.CalendarApi.CalendarScope];
-
-    void prompt(String url) async {
-      if (await canLaunch(url)) {
-        await launch(
-          url,
-          forceSafariVC: false,
-          forceWebView: false,
-          headers: <String, String>{'my_header_key': 'my_header_value'},
-        );
-      } else {
-        throw 'Could not launch $url';
-      }
-    }
 
     String timeZone = await FlutterNativeTimezone.getLocalTimezone();
 
-    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
+    http.Client httpClient = http.Client();
+    String accessToken = credsDoc.get('accessToken');
+    String refreshToken = credsDoc.get('refreshToken');
+    DateTime expiration = new DateTime.utc(2020, 10, 8, 2, 20, 0, 0, 0);
+    AuthClient clientAlt = authenticatedClient(httpClient, AccessCredentials(new AccessToken("Bearer", accessToken, expiration), refreshToken, scopes));
 
-      cal.CalendarApi calAPI = cal.CalendarApi(client);
-      String currentUser = FirebaseAuth.instance.currentUser.email;
-      cal.Calendar googleCalendar = await calAPI.calendars.get(currentUser);
+//    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
+//      log(client.credentials.accessToken.data);
+//      log(client.credentials.accessToken.expiry.timeZoneName);
+//      log(client.credentials.refreshToken);
+    cal.CalendarApi calAPI = cal.CalendarApi(clientAlt);
+    String calEmail = "no.probllama.linked@gmail.com";
+    cal.Calendar googleCalendar = await calAPI.calendars.get(calEmail);
+    String userEmail = FirebaseAuth.instance.currentUser.email;
+    cal.Event calEvent = cal.Event.fromJson({
+      'summary': event.title,
+      'description': event.description,
+      'start': {
+        'dateTime': event.startTime.toString(),
+        'timeZone': timeZone
+      },
+      'end': {
+        'dateTime': event.endTime.toString(),
+        'timeZone': timeZone
+      },
+      'attendees': [
+        {
+          'email': userEmail
+        }
+      ]
+    });
 
-      cal.Event calEvent = cal.Event.fromJson({
-        'summary': event.title,
-        'description': event.description,
-        'start': {
-          'dateTime': event.startTime.toString(),
-          'timeZone': timeZone
-        },
-        'end': {
-          'dateTime': event.endTime.toString(),
-          'timeZone': timeZone
-        },
+    if (createLink) {
+      calEvent.conferenceData = cal.ConferenceData.fromJson({
+        'createRequest': {
+          'requestId': 'test'
+        }
       });
+    }
+    else {
+      calEvent.location = event.location;
+    }
+    await calAPI.events.insert(calEvent, calEmail, conferenceDataVersion: 1).then((createdEvent) async {
+      if (createdEvent.status == 'confirmed') {
+        print('confirmed');
 
-      if (createLink) {
-        calEvent.conferenceData = cal.ConferenceData.fromJson({
-          'createRequest': {
-            'requestId': 'test'
-          }
-        });
+        String calendarURL = createdEvent.htmlLink;
+        print('cal URL: ' + calendarURL);
+        if (createLink) {
+          FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'location': createdEvent.conferenceData.entryPoints[0].uri});
+        }
+        if (await canLaunch(calendarURL)) {
+          await launch(
+            calendarURL,
+            forceSafariVC: false,
+            forceWebView: false,
+            headers: <String, String>{'my_header_key': 'my_header_value'},
+          );
+        } else {
+          throw 'Could not launch $calendarURL';
+        }
       }
       else {
-        calEvent.location = event.location;
+        print('error inserting event');
       }
-      await calAPI.events.insert(calEvent, currentUser, conferenceDataVersion: 1).then((createdEvent) async {
-        if (createdEvent.status == 'confirmed') {
-          print('confirmed');
-
-          String calendarURL = createdEvent.htmlLink;
-          if (createLink) {
-            FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'location': createdEvent.conferenceData.entryPoints[0].uri});
-          }
-          if (await canLaunch(calendarURL)) {
-            await launch(
-              calendarURL,
-              forceSafariVC: false,
-              forceWebView: false,
-              headers: <String, String>{'my_header_key': 'my_header_value'},
-            );
-          } else {
-            throw 'Could not launch $calendarURL';
-          }
-        }
-        else {
-          print('error inserting event');
-        }
-        client.close();
-        eventID = createdEvent.id;
-      });
+      clientAlt.close();
     });
-    print("id: " + eventID);
-    return eventID;
+//    });
+    return calEvent;
+  }
+
+  static void addMeToCalEvent(String eventID) async {
+    DocumentSnapshot credsDoc = await FirebaseFirestore.instance.collection('credentials').doc('creds').get();
+    var scopes = [cal.CalendarApi.CalendarScope];
+    http.Client httpClient = http.Client();
+    String accessToken = credsDoc.get('accessToken');
+    String refreshToken = credsDoc.get('refreshToken');
+    DateTime expiration = new DateTime.utc(2020, 9, 8, 2, 20, 0, 0, 0);
+    AuthClient clientAlt = authenticatedClient(httpClient, AccessCredentials(new AccessToken("Bearer", accessToken, expiration), refreshToken, scopes));
+
+    cal.CalendarApi calAPI = cal.CalendarApi(clientAlt);
+    String calEmail = "no.probllama.linked@gmail.com";
+    cal.Calendar googleCalendar = await calAPI.calendars.get(calEmail);
+    String userEmail = FirebaseAuth.instance.currentUser.email;
+
+    cal.Event calEvent = await calAPI.events.get(calEmail, eventID);
+    calEvent.attendees.add(cal.EventAttendee.fromJson({
+      'email': userEmail
+    }));
   }
 }
+

@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'Event.dart';
 import 'Login.dart';
 import 'Utils.dart';
-import 'dart:developer';
+import 'package:googleapis/calendar/v3.dart' as cal;
 
 class _CreateEventPageState extends State<CreateEventPage> {
   // Event fields
@@ -24,6 +24,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final _formKey = GlobalKey<FormState>();
   FocusNode _focusNode;
   bool noMax = true;
+  bool autoGenURL = true;
 
   @override
   void initState() {
@@ -135,29 +136,80 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                       SizedBox(height: 12),
                                       Text('Location',
                                           style: Theme.of(context).textTheme.headline3),
-                                      TextFormField(
-                                        textInputAction: TextInputAction.next,
-                                        validator: (value) {
-                                          if (value.isEmpty) {
-                                            return _isVirtual
-                                                ? 'Please enter a URL.'
-                                                : 'Please enter a location.';
-                                          }
-                                          return null;
-                                        },
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _location = value;
-                                          });
-                                        },
-                                        onFieldSubmitted: (value) {
-                                          FocusScope.of(context).nextFocus();
-                                        },
-                                        decoration: Utils.textFieldDecoration(
-                                            hint: _isVirtual
-                                                ? 'Paste Zoom/Google Meet link'
-                                                : 'Arts Quad'),
-                                      ),
+                                      if (_isVirtual)
+                                        ListTile(
+                                          contentPadding: EdgeInsets.all(0),
+                                          title: Text('Auto-generate Google Meet URL'),
+                                          leading: Radio(
+                                            value: true,
+                                            groupValue: autoGenURL,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                autoGenURL = true;
+                                                _location = null;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      if (_isVirtual)
+                                        ListTile(
+                                          contentPadding: EdgeInsets.all(0),
+                                          title: Row(
+                                            children: [
+                                              Text('Enter URL:'),
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: TextFormField(
+                                                  validator: (value) {
+                                                    if (autoGenURL) return null;
+                                                    if (value.isEmpty) {
+                                                      return 'Please enter a URL or select auto-generate.';
+                                                    }
+                                                    return null;
+                                                  },
+                                                  decoration: Utils.textFieldDecoration(),
+                                                  onChanged: (value) {
+                                                    if (!autoGenURL) {
+                                                      setState(() {
+                                                        _location = value;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          leading: Radio(
+                                            value: true,
+                                            groupValue: !autoGenURL,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                autoGenURL = false;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      if (!_isVirtual)
+                                        TextFormField(
+                                          textInputAction: TextInputAction.next,
+                                          validator: (value) {
+                                            if (value.isEmpty) {
+                                              return 'Please enter a location.';
+                                            }
+                                            return null;
+                                          },
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _location = value;
+                                            });
+                                          },
+                                          onFieldSubmitted: (value) {
+                                            FocusScope.of(context).nextFocus();
+                                          },
+                                          decoration: Utils.textFieldDecoration(
+                                              hint: 'Arts Quad'
+                                          ),
+                                        ),
                                       SizedBox(height: 12),
                                       Text("Description",
                                           style: Theme.of(context).textTheme.headline3),
@@ -214,39 +266,41 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                         ),
                                       ),
                                       ListTile(
-                                          contentPadding: EdgeInsets.all(0),
-                                          title: Row(
-                                            children: [
-                                              Text('Max: '),
-                                              SizedBox(width: 8),
-                                              Expanded(
-                                                child: TextFormField(
-                                                  initialValue: '10',
-                                                  keyboardType: TextInputType.number,
-                                                  inputFormatters: [
-                                                    FilteringTextInputFormatter.digitsOnly
-                                                  ],
-                                                  validator: (value) {
-                                                    if (noMax) return null;
-                                                    if (value.isEmpty) {
-                                                      return 'Please enter a number.';
-                                                    }
-                                                    int num = int.parse(value);
-                                                    if (num < 2) {
-                                                      return 'Must have more than 1 attendee (you count as one).';
-                                                    }
-                                                    return null;
-                                                  },
-                                                  decoration: Utils.textFieldDecoration(),
-                                                  onChanged: (value) {
+                                        contentPadding: EdgeInsets.all(0),
+                                        title: Row(
+                                          children: [
+                                            Text('Max: '),
+                                            SizedBox(width: 8),
+                                            Expanded(
+                                              child: TextFormField(
+                                                initialValue: '10',
+                                                keyboardType: TextInputType.number,
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter.digitsOnly
+                                                ],
+                                                validator: (value) {
+                                                  if (noMax) return null;
+                                                  if (value.isEmpty) {
+                                                    return 'Please enter a number.';
+                                                  }
+                                                  int num = int.parse(value);
+                                                  if (num < 2) {
+                                                    return 'Must have more than 1 attendee (you count as one).';
+                                                  }
+                                                  return null;
+                                                },
+                                                decoration: Utils.textFieldDecoration(),
+                                                onChanged: (value) {
+                                                  if (!noMax) {
                                                     setState(() {
                                                       _maxAttendees = int.parse(value);
                                                     });
-                                                  },
-                                                ),
+                                                  }
+                                                },
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
+                                        ),
                                         leading: Radio(
                                           value: true,
                                           groupValue: !noMax,
@@ -325,9 +379,18 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                       'startTime': Timestamp.fromDate(_startTime),
                                       'endTime': Timestamp.fromDate(_endTime),
                                       'tags': _tags,
+                                      'calEventID': null
                                     });
                                     DocumentSnapshot snapshot = await doc.get();
-                                    EventUtils.addToCalendar(context, Event.fromDoc(snapshot), _isVirtual);
+                                    cal.Event calEvent = await EventUtils.createCalEvent(context, Event.fromDoc(snapshot), autoGenURL);
+                                    doc.update({
+                                      'calEventID': calEvent.id,
+                                    });
+                                    if (autoGenURL) {
+                                      doc.update({
+                                        'location': calEvent.conferenceData.entryPoints[0].uri
+                                      });
+                                    }
                                     Navigator.pop(context);
                                   }
                                 });
