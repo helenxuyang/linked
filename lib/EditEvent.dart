@@ -28,6 +28,7 @@ class _EditEventPageState extends State<EditEventPage> {
   int _maxAttendees;
   String _organizerID; // google ID of event organizer
   List<String> _tags = [];
+  String _calEventID;
 
   final _formKey = GlobalKey<FormState>();
   FocusNode _focusNode;
@@ -53,6 +54,7 @@ class _EditEventPageState extends State<EditEventPage> {
     _maxAttendees = _origEvent.maxAttendees;
     _tags = _origEvent.tags;
     noMax = _origEvent.maxAttendees == null;
+    _calEventID = _origEvent.calEventID;
     _focusNode = FocusNode();
   }
 
@@ -334,6 +336,7 @@ class _EditEventPageState extends State<EditEventPage> {
                         'startTime': Timestamp.fromDate(_startTime),
                         'endTime': Timestamp.fromDate(_endTime),
                         'tags': _tags,
+                        'calEventID': _calEventID
                       });
                       Event modifiedEvent = new Event(_origEvent.eventID, _origEvent.calEventID, _title, _isVirtual, _location, _description, _organizerID, _startTime, _endTime, _origEvent.attendeeIDs, _maxAttendees, _tags);
                       log("max Attendees = $_maxAttendees");

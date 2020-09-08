@@ -655,14 +655,31 @@ class EventUtils {
     http.Client httpClient = http.Client();
     String accessToken = credsDoc.get('accessToken');
     String refreshToken = credsDoc.get('refreshToken');
-    DateTime expiration = new DateTime.utc(2020, 10, 8, 2, 20, 0, 0, 0);
-    AuthClient clientAlt = authenticatedClient(httpClient, AccessCredentials(new AccessToken("Bearer", accessToken, expiration), refreshToken, scopes));
+
+    void prompt(String url) async {
+      if (await canLaunch(url)) {
+        await launch(
+          url,
+          forceSafariVC: false,
+          forceWebView: false,
+          headers: <String, String>{'my_header_key': 'my_header_value'},
+        );
+      } else {
+        throw 'Could not launch $url';
+      }
+    }
+
+      var id = new ClientId("44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com", "");
+      DateTime expiry = DateTime.utc(2020, 9,8, 17, 23, 03);
+      log(Timestamp.fromDate(expiry).toString() );
+      AuthClient client = authenticatedClient(httpClient, AccessCredentials(new AccessToken("Bearer", accessToken, expiry), refreshToken, scopes));
 
 //    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
 //      log(client.credentials.accessToken.data);
-//      log(client.credentials.accessToken.expiry.timeZoneName);
+//      log(Timestamp.fromDate(client.credentials.accessToken.expiry).toString());
 //      log(client.credentials.refreshToken);
-    cal.CalendarApi calAPI = cal.CalendarApi(clientAlt);
+//      log(client.credentials.accessToken.type);
+    cal.CalendarApi calAPI = cal.CalendarApi(client);
     String calEmail = "no.probllama.linked@gmail.com";
     cal.Calendar googleCalendar = await calAPI.calendars.get(calEmail);
     String userEmail = FirebaseAuth.instance.currentUser.email;
@@ -717,10 +734,10 @@ class EventUtils {
       else {
         print('error inserting event');
       }
-      clientAlt.close();
+      client.close();
     });
+      return calEvent;
 //    });
-    return calEvent;
   }
 
   static void addMeToCalEvent(String eventID) async {
