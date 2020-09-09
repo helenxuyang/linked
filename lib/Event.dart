@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart';
+import 'package:no_probllama_app/Utils.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Profile.dart';
@@ -502,16 +503,7 @@ class JoinButton extends StatelessWidget {
         ),
         child: Text('JOIN'),
         onPressed: () async {
-          if (await canLaunch(url)) {
-            await launch(
-              url,
-              forceSafariVC: false,
-              forceWebView: false,
-              headers: <String, String>{'my_header_key': 'my_header_value'},
-            );
-          } else {
-            throw 'Could not launch $url';
-          }
+          Utils.launchURL(url);
         });
   }
 }
@@ -649,23 +641,11 @@ class EventUtils {
   // (intended for no.probllama acct)
   static Future<AccessCredentials> promptBoi() async {
     var scopes = [cal.CalendarApi.CalendarScope];
-    var id = new ClientId("44712156267-lakgod0gdas9v68dloqfjs5nrigvbp6u.apps.googleusercontent.com", "");
-
-    void prompt(String url) async {
-      if (await canLaunch(url)) {
-        await launch(
-          url,
-          forceSafariVC: false,
-          forceWebView: false,
-          headers: <String, String>{'my_header_key': 'my_header_value'},
-        );
-      } else {
-        throw 'Could not launch $url';
-      }
-    }
-
-    await clientViaUserConsent(id, scopes, prompt).then((AuthClient client) async {
-      AccessCredentials creds = client.credentials;
+    String id = await FirebaseFirestore.instance.collection('credentials').doc('creds').get().then((doc) => doc.get('clientID'));
+    ClientId clientID = new ClientId(id, "");
+    AccessCredentials creds;
+    await clientViaUserConsent(clientID, scopes, Utils.launchURL).then((AuthClient client) async {
+      creds = client.credentials;
       String currentAccessToken = creds.accessToken.data;
       String currentRefreshToken = creds.refreshToken;
       DateTime currentExpiry = creds.accessToken.expiry;
@@ -675,8 +655,9 @@ class EventUtils {
       DocumentReference credsDocRef = FirebaseFirestore.instance.collection('credentials').doc('creds');
       credsDocRef.update({'accessToken': currentAccessToken});
       credsDocRef.update({'refreshToken': currentRefreshToken});
-      credsDocRef.update({'expiry': Timestamp.fromDate(currentExpiry)});
+      credsDocRef.update({'expiry': Timestamp.fromDate(creds.accessToken.expiry)});
     });
+    return creds;
   }
 
   // Obtain our service account's accessCredentials.
@@ -694,15 +675,16 @@ class EventUtils {
     print(expiry.toString());
     expiry = expiry.toUtc();
     AccessToken token = new AccessToken("Bearer", accessToken, expiry);
-    return AccessCredentials(token,refreshToken, scopes);
+    return AccessCredentials(token, refreshToken, scopes);
   }
+
   // store updated credentials in Firebase if changed during use
   static void refreshCredentials(AccessCredentials cred) async {
     DocumentReference credsDocRef = FirebaseFirestore.instance.collection('credentials').doc('creds');
     DocumentSnapshot credsDoc = await credsDocRef.get();
     String firebaseAccessToken = credsDoc.get("accessToken");
     String firebaseRefreshToken = credsDoc.get('refreshToken');
-    DateTime firebaseExpiry = credsDoc.get("expiry").toDate().toUTC();
+    DateTime firebaseExpiry = credsDoc.get("expiry").toDate().toUtc();
     String currentAccessToken = cred.accessToken.data;
     String currentRefreshToken = cred.refreshToken;
     DateTime currentExpiry = cred.accessToken.expiry;
@@ -718,17 +700,26 @@ class EventUtils {
 
   }
 
-  // returns Google Calendar event
-  static Future<cal.Event> createCalEvent(BuildContext context, Event event, bool createLink) async {
-    String timeZone = await FlutterNativeTimezone.getLocalTimezone();
-    promptBoi();
+  static Future<AutoRefreshingAuthClient> getRefreshingAuthClient() async {
     http.Client httpClient = http.Client();
     AccessCredentials credentials = await getCredentials();
     AuthClient client = authenticatedClient(httpClient, credentials);
+    String id = await FirebaseFirestore.instance.collection('credentials').doc('creds').get().then((doc) => doc.get('clientID'));
+    ClientId clientID = ClientId(id, "");
 
+    AutoRefreshingAuthClient refreshingClient = autoRefreshingClient(clientID, credentials, client);
+    refreshingClient.credentialUpdates.listen((event) => refreshCredentials(event));
+    return refreshingClient;
+  }
+  // returns Google Calendar event
+  static Future<cal.Event> createCalEvent(BuildContext context, Event event, bool createLink) async {
+
+    String timeZone = await FlutterNativeTimezone.getLocalTimezone();
+   // promptBoi();
+
+    AutoRefreshingAuthClient client = await getRefreshingAuthClient();
     cal.CalendarApi calAPI = cal.CalendarApi(client);
     String calEmail = "no.probllama.linked@gmail.com";
-    cal.Calendar googleCalendar = await calAPI.calendars.get(calEmail);
     String userEmail = FirebaseAuth.instance.currentUser.email;
     cal.Event calEvent = cal.Event.fromJson({
       'summary': event.title,
@@ -758,52 +749,34 @@ class EventUtils {
     else {
       calEvent.location = event.location;
     }
-    await calAPI.events.insert(calEvent, calEmail, conferenceDataVersion: 1).then((createdEvent) async {
-      if (createdEvent.status == 'confirmed') {
-        print('confirmed');
-
-        String calendarURL = createdEvent.htmlLink;
-        print('cal URL: ' + calendarURL);
-        if (createLink) {
-          FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'location': createdEvent.conferenceData.entryPoints[0].uri});
-        }
-        if (await canLaunch(calendarURL)) {
-          await launch(
-            calendarURL,
-            forceSafariVC: false,
-            forceWebView: false,
-            headers: <String, String>{'my_header_key': 'my_header_value'},
-          );
-        } else {
-          throw 'Could not launch $calendarURL';
-        }
+    cal.Event createdEvent = await calAPI.events.insert(calEvent, calEmail, conferenceDataVersion: 1);
+    if (createdEvent.status == 'confirmed') {
+      print('confirmed');
+      print('event calID: ' + createdEvent.id);
+      FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'calEventID': createdEvent.id});
+      if (createLink) {
+        FirebaseFirestore.instance.collection('events').doc(event.eventID).update({'location': createdEvent.conferenceData.entryPoints[0].uri});
       }
-      else {
-        print('error inserting event');
-      }
-      client.close();
-      //refreshCredentials(credentials);
-    });
-      return calEvent;
-
+    }
+    else {
+      print('error inserting event');
+    }
+    client.close();
+    return createdEvent;
   }
 
   static void addMeToCalEvent(String eventID) async {
-
-    http.Client httpClient = http.Client();
-    AccessCredentials credentials = await getCredentials();
-    AuthClient client = authenticatedClient(httpClient, credentials);
-
-    cal.CalendarApi calAPI = cal.CalendarApi(client);
+    //promptBoi();
+    AutoRefreshingAuthClient refreshingClient = await getRefreshingAuthClient();
+    cal.CalendarApi calAPI = cal.CalendarApi(refreshingClient);
     String calEmail = "no.probllama.linked@gmail.com";
-    cal.Calendar googleCalendar = await calAPI.calendars.get(calEmail);
     String userEmail = FirebaseAuth.instance.currentUser.email;
 
     cal.Event calEvent = await calAPI.events.get(calEmail, eventID);
     calEvent.attendees.add(cal.EventAttendee.fromJson({
       'email': userEmail
     }));
-    refreshCredentials(credentials);
+    Utils.launchURL(calEvent.htmlLink);
   }
 }
 

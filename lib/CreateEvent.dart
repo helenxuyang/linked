@@ -61,7 +61,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
   @override
   Widget build(BuildContext context) {
-    _organizerID = Provider.of<CurrentUserInfo>(context).id;
+    _organizerID = Provider.of<CurrentUserInfo>(context, listen: false).id;
     return Scaffold(
         body: SafeArea(
             child:
@@ -383,14 +383,13 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                     });
                                     DocumentSnapshot snapshot = await doc.get();
                                     cal.Event calEvent = await EventUtils.createCalEvent(context, Event.fromDoc(snapshot), autoGenURL);
-                                    doc.update({
-                                      'calEventID': calEvent.id,
+                                    Utils.launchURL(calEvent.htmlLink);
+                                    DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(_organizerID);
+                                    FirebaseFirestore.instance.runTransaction((transaction) async {
+                                      DocumentSnapshot userSnap = await transaction.get(userDoc);
+                                      transaction.update(
+                                          userSnap.reference, {'events': userSnap.get('events')..add(doc.id)});
                                     });
-                                    if (autoGenURL) {
-                                      doc.update({
-                                        'location': calEvent.conferenceData.entryPoints[0].uri
-                                      });
-                                    }
                                     Navigator.pop(context);
                                   }
                                 });
