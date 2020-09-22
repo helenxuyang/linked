@@ -1,2 +1,4 @@
 google-auth-oauthlib
 google-appengine
+flask
+flask_httpauth
