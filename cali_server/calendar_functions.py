@@ -38,7 +38,7 @@ def get_calendar_service():
 
     return build('calendar', 'v3', credentials=creds, cache_discovery=False)
 
-def createEvent(json_string):
+def create_event(json_string):
     """
     Creates a calendar event with the provided json
     """
@@ -48,10 +48,20 @@ def createEvent(json_string):
                                     body=json.loads(json_string)).execute()
     return event
 
+def edit_event(json_string):
+    """
+    Edits a calendar event with the provided json
+    """
+    logging.info("edit event request: %s" % json_string)
+    service = get_calendar_service()
+    json_dict = json.loads(json_string)
+    event = service.events().update(calendarId = 'primary', body=json_dict).execute()
+
+
 if __name__ == '__main__':
     import datetime
     start_datetime = datetime.datetime.utcnow()
     start_dt_str = start_datetime.isoformat() + 'Z' # 'Z' indicates UTC time
     end_dt_str = (start_datetime + datetime.timedelta(minutes=60)).isoformat() + 'Z'
-    x = createEvent('{ "summary":"test event (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str))
+    x = create_event('{ "summary":"test event (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str))
     print(x)

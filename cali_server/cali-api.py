@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from calendar_functions import *
+import calendar_functions 
 
 flask_api = Flask('Cali API')
 auth = HTTPBasicAuth()
@@ -28,7 +28,7 @@ def status_check():
     return 'Successfully signed on\n'
 
 @flask_api.route("/create-event", methods=['POST'])
-def createEvent():
+def create_event():
     logging.info("create Event rest api request")
     if(request.json == None):
         response = "Json request not present, received %s" % str(request.data)
@@ -36,7 +36,7 @@ def createEvent():
     else:
         result = None
         try:
-            result = createEvent(request.json)
+            result = calendar_functions.create_event(request.json)
             logging.info(result)
             return jsonify(result), 201
         except Exception as e:
@@ -44,6 +44,15 @@ def createEvent():
             logging.info(response)
             return jsonify(response), 500
 
+@flask_api.route("/edit-event", methods=['POST'])
+def edit_event():
+    logging.info("edit Event rest api request")
+    if(request.json == None):
+        response = "Json request not present, received %s" % str(request.data)
+        return jsonify(response), 400
+    else:
+        result = None
+        return jsonify("Unimplemented", 500)
         
 
 
