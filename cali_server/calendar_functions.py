@@ -36,7 +36,7 @@ def get_calendar_service():
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
 
-    return build('calendar', 'v3', credentials=creds)
+    return build('calendar', 'v3', credentials=creds, cache_discovery=False)
 
 def createEvent(json_string):
     """
