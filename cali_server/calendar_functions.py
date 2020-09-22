@@ -48,14 +48,27 @@ def create_event(json_string):
                                     body=json.loads(json_string)).execute()
     return event
 
-def edit_event(json_string):
+def edit_event(edit_event_id, json_string):
     """
     Edits a calendar event with the provided json
     """
+    # adding for debugging
+    start_dt_str = start_datetime.isoformat() + 'Z' # 'Z' indicates UTC time
+    end_dt_str = (start_datetime + datetime.timedelta(minutes=60)).isoformat() + 'Z'
+    json_dict = {
+        "summary": "this event was edited",
+        "description": "woah!",
+        "start": {'dateTime': start_dt_str},
+        "end": {'dateTime': end_dt_str},
+    }
+
     logging.info("edit event request: %s" % json_string)
     service = get_calendar_service()
-    json_dict = json.loads(json_string)
-    event = service.events().update(calendarId = 'primary', body=json_dict).execute()
+    
+    #json_dict = json.loads(json_string)
+    
+    print(json_string)
+    event = service.events().update(calendarId = 'primary', eventId=edit_event_id, body=json_dict).execute()
 
 
 if __name__ == '__main__':
@@ -63,5 +76,10 @@ if __name__ == '__main__':
     start_datetime = datetime.datetime.utcnow()
     start_dt_str = start_datetime.isoformat() + 'Z' # 'Z' indicates UTC time
     end_dt_str = (start_datetime + datetime.timedelta(minutes=60)).isoformat() + 'Z'
-    x = create_event('{ "summary":"test event (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str))
-    print(x)
+    create_event_json = '{ "summary":"test event (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str)
+    # resp = create_event(create_event_json)
+    edit_event_id = "azl0bDIzanAwOXUxcjRuZzc1MzRpYWRmcmcgbm8ucHJvYmxsYW1hLmxpbmtlZEBt"
+    edit_event_json = '{"summary":"test event,edit (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str)
+    resp = edit_event(edit_event_id, edit_event_json)
+    print(resp)
+    print(resp.data)
