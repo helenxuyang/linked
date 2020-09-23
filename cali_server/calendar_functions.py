@@ -2,11 +2,11 @@
 
 
 """
+import datetime
+import json
+import logging
 import os
 import pickle
-import json
-import datetime
-import logging
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -42,6 +42,10 @@ def create_event(json_string):
     """
     Creates a calendar event with the provided json
     """
+    try:
+        assert type(json_string) == str
+    except:
+        raise Exception("arg should be a json string, not %s" % type(json_string))
     logging.info("create event request: %s" % json_string)
     service = get_calendar_service()
     event = service.events().insert(calendarId = 'primary',
@@ -67,11 +71,10 @@ def edit_event(edit_event_id, json_string):
 
 
 if __name__ == '__main__':
-    import datetime
     start_datetime = datetime.datetime.utcnow()
     start_dt_str = start_datetime.isoformat() + 'Z' # 'Z' indicates UTC time
     end_dt_str = (start_datetime + datetime.timedelta(minutes=60)).isoformat() + 'Z'
-    create_event_json = '{ "summary":"test event (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str)
+    # create_event_json = '{ "summary":"test event (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str)
     # resp = create_event(create_event_json)
     edit_event_id = "oo7pc5vbrac64umn0210494t08"
     edit_event_json = '{"summary":"test event,edit (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str)
