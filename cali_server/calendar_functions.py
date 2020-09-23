@@ -69,6 +69,27 @@ def edit_event(edit_event_id, json_string):
     updated_event = service.events().update(calendarId = 'primary', eventId=edit_event_id, body=event).execute()
     return updated_event
 
+def add_attendee(attendee, event_id):
+    logging.info("add attendee request: %s,%s" % (attendee, event_id))
+    service = get_calendar_service()
+    event = service.events().get(calendarId='primary', eventId=event_id).execute()
+    if event is None:
+        raise Exception("Cannot find cal event with id = %s" % event_id)
+    attendees = event.get('attendees')
+    if attendees is not None:
+        attendees_emails = map(lambda guest: guest.email, attendees)
+        if event.maxAttendee == len(attendees):
+            raise Exception("Event %s already has max attendees invited" % event_id)
+        elif attendee in attendees_emails:
+            raise Exception("Attendee is already added to event")
+        else:
+            event[attendees].append(attendee)
+    else:
+        event[attendees] = [attendee]
+    updated_event = service.events().update(calendarId = 'primary', eventId=event_id, body=event).execute()
+    return updated_event
+
+
 
 if __name__ == '__main__':
     start_datetime = datetime.datetime.utcnow()
