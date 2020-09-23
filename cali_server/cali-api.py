@@ -44,15 +44,24 @@ def create_event():
             logging.info(response)
             return jsonify(response), 500
 
-@flask_api.route("/edit-event", methods=['POST'])
+@flask_api.route("/edit-event", methods=['PUT'])
 def edit_event():
+    
     logging.info("edit Event rest api request")
     if(request.json == None):
         response = "Json request not present, received %s" % str(request.data)
         return jsonify(response), 400
     else:
+        edit_event_id = request.args.get('id')
         result = None
-        return jsonify("Unimplemented", 500)
+        try:
+            result = calendar_functions.edit_event(edit_event_id, request.json)
+            logging.info(result)
+            return jsonify(result), 201
+        except Exception as e:
+            response = "\n Error occurred in GCal request, %s \n" % str(e)
+            logging.info(response)
+            return jsonify(response), 500
         
 
 

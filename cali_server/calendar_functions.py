@@ -50,25 +50,20 @@ def create_event(json_string):
 
 def edit_event(edit_event_id, json_string):
     """
-    Edits a calendar event with the provided json
+    Fetches calendar event then edits it with the provided json
     """
-    # adding for debugging
-    start_dt_str = start_datetime.isoformat() + 'Z' # 'Z' indicates UTC time
-    end_dt_str = (start_datetime + datetime.timedelta(minutes=60)).isoformat() + 'Z'
-    json_dict = {
-        "summary": "this event was edited",
-        "description": "woah!",
-        "start": {'dateTime': start_dt_str},
-        "end": {'dateTime': end_dt_str},
-    }
-
     logging.info("edit event request: %s" % json_string)
     service = get_calendar_service()
+    event = service.events().get(calendarId='primary', eventId=edit_event_id).execute()
+    if event is None:
+        raise Exception("Cannot find cal event with id = %s" % edit_event_id)
+    json_dict = json.loads(json_string)
     
-    #json_dict = json.loads(json_string)
-    
-    print(json_string)
-    event = service.events().update(calendarId = 'primary', eventId=edit_event_id, body=json_dict).execute()
+    for field in json_dict:
+        event[field] = json_dict[field]
+
+    updated_event = service.events().update(calendarId = 'primary', eventId=edit_event_id, body=event).execute()
+    return updated_event
 
 
 if __name__ == '__main__':
@@ -78,8 +73,8 @@ if __name__ == '__main__':
     end_dt_str = (start_datetime + datetime.timedelta(minutes=60)).isoformat() + 'Z'
     create_event_json = '{ "summary":"test event (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str)
     # resp = create_event(create_event_json)
-    edit_event_id = "azl0bDIzanAwOXUxcjRuZzc1MzRpYWRmcmcgbm8ucHJvYmxsYW1hLmxpbmtlZEBt"
+    edit_event_id = "oo7pc5vbrac64umn0210494t08"
     edit_event_json = '{"summary":"test event,edit (serve acct)", "description":"created event via service acct", "start": {"dateTime": "%s"}, "end": {"dateTime": "%s"}, "attendees": [{ "email": "sih28@cornell.edu" }] }' % (start_dt_str, end_dt_str)
     resp = edit_event(edit_event_id, edit_event_json)
     print(resp)
-    print(resp.data)
+    
