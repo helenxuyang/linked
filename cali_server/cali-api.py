@@ -26,8 +26,12 @@ def try_request(gcal_fn, args):
             result = gcal_fn(*args)
             logging.info(result)
             return jsonify(result), 201
-        except Exception as e:
+        except calendar_functions.APIRequestException as e:
             response = "\n Error occurred in GCal request, %s \n" % str(e)
+            logger.info(response)
+            return jsonify(response), 400
+        except Exception as e:
+            response = "\n Unexpected exception occurred in GCal request, %s \n" % str(e)
             logger.info(response)
             return jsonify(response), 500
 
@@ -65,11 +69,19 @@ def add_attendee():
     logger.info("add attendee %s" % attendee)
     event_id = request.args.get('event-id')
     if event_id == None:
-        return "", 400
-    
+        return jsonify("event-id needed for add-attendee request"), 400
     return try_request(calendar_functions.add_attendee, (attendee, event_id))
 
-
+@flask_api.route("/remove-attendee", methods=['PUT'])
+def remove_attendee():
+    attendee = request.args.get('attendee')
+    if attendee == None:
+        return jsonify("attendee needed for add-attendee request"), 400
+    logger.info("add attendee %s" % attendee)
+    event_id = request.args.get('event-id')
+    if event_id == None:
+        return jsonify("event-id needed for add-attendee request"), 400
+    return try_request(calendar_functions.remove_attendee, (attendee, event_id))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
